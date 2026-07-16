@@ -1,0 +1,5 @@
+{
+  "llm": { "provider": "deepseek", "model": "deepseek-chat", "maxTokens": 4096, "temperature": 0.1 },
+  "agent": { "maxRounds": 10, "maxRetries": 3, "workspaceRoot": "./", "allowedPaths": ["src/", "tests/"] },
+  "guardrails": { "mode": "prompt", "allowedPatterns": [] }
+}
