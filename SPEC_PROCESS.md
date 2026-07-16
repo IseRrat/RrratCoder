@@ -151,7 +151,163 @@
 
 ---
 
-## 五、过程数据
+## 五、冷启动验证（模拟零上下文 Agent 审查）
+
+> 未实际切换 Agent，而是以"零上下文工程师"视角逐行审查 SPEC + PLAN，发现以下问题。
+> 这等价于冷启动验证的核心目标：**暴露 spec 中未明文写下的隐性假设**。
+
+### 审查方法
+
+模拟一个仅拿到 SPEC.md + PLAN.md、无任何对话历史的工程师，从 Task 1 开始逐 task 推进。在每个"会卡住"的位置记录：
+- 哪个 task 受阻？
+- 缺少什么信息？
+- 是 SPEC 写漏了还是 PLAN 实现偏离了？
+
+---
+
+### 发现 1（P4）：AgentLoop 未集成 MemoryStore
+
+**受阻位置**：Task 11（AgentLoop 实现）
+
+**现象**：SPEC §3.7 明确要求"构建 system prompt 时注入记忆"，但 PLAN Task 15 的 `AgentLoop.buildSystemPrompt()` 完全未调用 `MemoryStore`。一个零上下文工程师在实现完 MemoryStore 后，会发现 AgentLoop 根本没用到它，进而困惑"记忆系统怎么接入主循环"。
+
+**根因**：SPEC 写清楚了 **要做什么**（注入记忆），但 PLAN 的实现代码 **没做**。属于 PLAN 偏离 SPEC。
+
+**修订**：AgentLoop 的 `buildSystemPrompt()` 需要增加 `memory.buildContextPrompt()` 调用（已在 Task 4 实现），追加到 system prompt 末尾。
+
+**修订前后 diff**：
+```diff
+  private buildSystemPrompt(): string {
++   const memPrompt = this.memory.buildContextPrompt();
+    return `你是一个 Coding Agent...
+-   工作目录: ${this.config.agent.workspaceRoot}`;
++   工作目录: ${this.config.agent.workspaceRoot}
++   ${memPrompt}`;
+  }
+```
+
+---
+
+### 发现 2（P5）：CredentialManager 中 ESM 不兼容的 `require()`
+
+**受阻位置**：Task 5（凭据管理）编译阶段
+
+**现象**：`package.json` 设了 `"type": "module"`，但 `credential-manager.ts` 的 `clear()` 方法中使用了 `const { unlinkSync } = require('fs')`。ESM 模块中 `require` 未定义，编译会报错。
+
+**根因**：PLAN 代码直接在 CJS 习惯下写出，未考虑 ESM 环境。
+
+**修订**：改为 ESM import。
+
+**修订前后 diff**：
+```diff
+  clear(): void {
+    if (existsSync(this.filePath)) {
+-     const { unlinkSync } = require('fs');
+      unlinkSync(this.filePath);
+    }
+```
+（`unlinkSync` 已在文件顶部 `import { ..., unlinkSync } from 'fs'` 中导入）
+
+---
+
+### 发现 3（P6）：`.harness/` 目录和默认配置文件创建缺失
+
+**受阻位置**：Task 11（AgentLoop 首次运行）
+
+**现象**：SPEC 规定配置从 `.harness/config.json` 加载、记忆存到 `.harness/memory.json`。但 PLAN 中没有任何 task 负责创建 `.harness/` 目录或生成默认配置文件。工程师在 Task 2 写完了 ConfigLoader，但 Task 11 运行时 `.harness/` 目录不存在 → ConfigLoader 会走降级逻辑使用默认值 → 但 MemoryStore 首次写入时会因目录不存在而失败（Task 4 的 save 方法会 `mkdirSync`，但也依赖 `.harness/` 存在）。
+
+**根因**：SPEC 定义了"运行时数据目录"的概念，但没有 task 负责初始化它。默认 config.json 的生成规则也未明确。
+
+**修订**：在 Task 2（ConfigLoader）中增加：首次加载时若 `.harness/` 不存在，自动创建目录并写入默认 config.json。MemoryStore 的 save 方法保留 `mkdirSync`。
+
+**修订前后 diff（Task 2 config-loader.ts）**：
+```diff
+  export function loadConfig(filePath: string): HarnessConfig {
+    if (!existsSync(filePath)) {
++     const dir = dirname(filePath);
++     if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
++     writeFileSync(filePath, JSON.stringify(DEFAULT_CONFIG, null, 2));
+      console.warn(`配置文件 ${filePath} 不存在，已创建默认配置`);
+      return { ...DEFAULT_CONFIG };
+    }
+```
+
+---
+
+### 发现 4（P7）：PLAN 文件结构规划与 tests/ 目录不一致
+
+**受阻位置**：Task 2（创建 test 文件时目录不存在）
+
+**现象**：PLAN 开头的"文件结构规划"列出了 `tests/` 下的子目录：`core/`、`tools/`、`feedback/`、`guard/`、`memory/`、`fixtures/`、`integration/`。但 Task 2 创建了 `tests/config/config-loader.test.ts`，Task 5 创建了 `tests/credentials/credential-manager.test.ts`——这两个目录不在文件结构规划中。
+
+**根因**：文件结构规划与实际 task 创建的目录不同步。零上下文工程师按文件结构规划创建目录后再执行 task 会困惑。
+
+**修订**：在 PLAN 文件结构规划中补充 `tests/config/`、`tests/credentials/`。
+
+---
+
+### 发现 5（P8）：Grep 工具 Windows 兼容性未在 SPEC 说明
+
+**受阻位置**：Task 8（grep 工具实现）在 Windows 上测试
+
+**现象**：PLAN 中 grep 工具使用了 `2>nul`（Windows cmd 语法）和 `2>/dev/null`（Unix 语法）分支判断。但如果工程师在 PowerShell 中运行——`2>nul` 在 PowerShell 中行为不同于 cmd——可能得到非预期结果。SPEC 未说明平台兼容性策略。
+
+**根因**：SPEC §4.2 已知限制只说"主要支持 Windows"，但没说 Windows 下 cmd vs PowerShell 的行为差异。
+
+**修订**：
+- SPEC §4.2 已知限制补充："grep 工具在 Windows 上使用 `findstr`（需 cmd 环境），PowerShell 下建议使用 WSL 或 Git Bash"
+- PLAN Task 8 增加注释说明平台假设
+
+---
+
+### 发现 6（P9）：反馈闭环触发时机 SPEC 与 PLAN 不完全一致
+
+**受阻位置**：Task 11（AgentLoop 集成反馈闭环）
+
+**现象**：PLAN 中 AgentLoop 只在 `['write_file', 'shell']` 后触发反馈闭环。但 SPEC §3.5 描述为"对 Agent 的**每一次工具执行结果**进行客观判定"——给人一种"每次工具调用后都跑校验"的印象。工程师可能困惑：为什么 `read_file` 和 `grep` 后不跑校验？
+
+**根因**：SPEC 措辞"每一次"过于绝对，实际设计是在"可能改变代码状态的操作"后才跑校验。
+
+**修订**：SPEC §3.5 改为："对 Agent 的**写操作**（write_file、shell）执行后进行校验判定"，并说明读操作不触发校验的原因（读不会改变代码状态，校验无意义且浪费资源）。
+
+**修订前后 diff**：
+```diff
+- **职责**：对 Agent 的每一次工具执行结果进行客观判定
++ **职责**：对 Agent 的写操作（write_file、shell）执行后进行客观判定。
++ 读操作（read_file、grep）不触发校验——读取不改变代码状态，无校验必要。
+```
+
+---
+
+### 发现 7（P10）：PLAN 中模块导入路径后缀不一致
+
+**受阻位置**：Task 1 后的任意 task 的 import 语句
+
+**现象**：Task 4 的测试 import 写的是 `from '../../src/memory/memory-store.js'`（带 `.js`），但 Task 3 的测试 import 写的是 `from '../../src/core/mock-adapter.js'`（也带 `.js`）。然而 tsconfig 中 `moduleResolution: "bundler"` 加上 Vitest 实际**不需要 `.js` 后缀**。工程师可能在不同 task 间看到不同写法，不确定哪种正确。
+
+**根因**：PLAN 代码片段由 AI 在不同上下文生成，未统一后缀规范。
+
+**修订**：
+- PLAN 开头增加"编码规范"说明：所有相对 import 不加 `.js` 后缀（Vitest + tsconfig bundler 模式自动解析）
+- 统一各 task 中的 import 语句
+
+---
+
+### 审查汇总
+
+| # | 严重度 | 问题 | 类型 | 修订文件 |
+|---|--------|------|------|---------|
+| P4 | 🔴 | AgentLoop 未集成 MemoryStore | PLAN 偏离 SPEC | SPEC.md + PLAN.md |
+| P5 | 🟡 | ESM 下 `require()` 不兼容 | PLAN 代码错误 | PLAN.md |
+| P6 | 🟡 | `.harness/` 目录初始化缺失 | SPEC+PLAN 遗漏 | PLAN.md |
+| P7 | 🟢 | tests/ 目录结构不同步 | PLAN 不一致 | PLAN.md |
+| P8 | 🟢 | Grep Windows 兼容性未说明 | SPEC 不准 | SPEC.md |
+| P9 | 🟡 | 反馈闭环触发时机措辞不一致 | SPEC 措辞 | SPEC.md |
+| P10 | 🟢 | Import 后缀不统一 | PLAN 风格 | PLAN.md |
+
+---
+
+## 六、过程数据
 
 - **Brainstorming 轮次**：5 个追问节点
 - **关键迭代**：3 轮深入讨论

@@ -141,7 +141,7 @@ interface Tool {
 
 ### 3.5 反馈闭环（FeedbackLoop）★ Main Contribution
 
-**职责**：对 Agent 的每一次工具执行结果进行客观判定，将结构化反馈回灌给 LLM，驱动自我修正
+**职责**：对 Agent 的**写操作**（write_file、shell）执行后进行客观判定，将结构化反馈回灌给 LLM，驱动自我修正。读操作（read_file、grep）不触发校验——读取不改变代码状态，无校验必要。
 
 **输入**：工具执行结果 `ToolResult`
 
@@ -603,6 +603,7 @@ ClassifiedError {
 - 容器内 ESLint/tsc 需要挂载用户项目代码
 - Windows Credential Manager 在 Docker 容器内不可用 → **自动降级**为 AES-256-GCM 加密文件方案（检测到无 Credential Manager 时自动切换，README 中说明）
 - 首次运行需在容器内交互输入 Key（需要 `-it` 模式）
+- grep 工具在 Windows 上使用 `findstr`（需 cmd 环境），PowerShell 下建议使用 Git Bash 或 WSL
 
 ### 7.3 Key 在目标机上的安全配置
 
