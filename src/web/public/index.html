@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>RrratCoder Dashboard</title>
+  <style>
+    body { font-family: -apple-system, sans-serif; margin: 2rem; background: #f5f5f5; }
+    .card { background: white; padding: 1rem; margin: 1rem 0; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    h2 { margin-top: 0; }
+  </style>
+</head>
+<body>
+  <h1>🚀 RrratCoder Dashboard</h1>
+  <div class="card">
+    <h2>配置摘要</h2>
+    <p>项目: <span id="ws-root">-</span></p>
+    <p>LLM: <span id="llm-provider">-</span></p>
+    <p>状态: <span id="status">-</span></p>
+  </div>
+  <div class="card">
+    <h2>最近会话</h2>
+    <pre id="sessions">暂无</pre>
+  </div>
+  <script>
+    fetch('/api/health')
+      .then(r => r.json())
+      .then(data => {
+        document.getElementById('status').textContent = data.status;
+        document.getElementById('ws-root').textContent = 'RrratCoder';
+        document.getElementById('llm-provider').textContent = 'DeepSeek';
+      });
+  </script>
+</body>
+</html>
