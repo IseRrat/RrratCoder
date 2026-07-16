@@ -1,0 +1,2 @@
+# RrratCoder
+这是南京大学2026智能化软件工程师训练营暑期学校的大作业，实现一个mini版的Coding Agent
