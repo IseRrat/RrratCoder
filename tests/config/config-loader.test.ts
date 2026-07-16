@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { loadConfig } from '../../src/config/config-loader';
 import * as path from 'path';
+import * as os from 'os';
 
 const FIXTURES = path.join(__dirname, '..', 'fixtures');
 
@@ -13,7 +14,7 @@ describe('ConfigLoader', () => {
   });
 
   it('配置文件不存在时返回默认值', () => {
-    const config = loadConfig('/nonexistent/config.json');
+    const config = loadConfig(path.join(os.tmpdir(), 'rrratcoder-test-nonexistent', 'config.json'));
     expect(config.agent.maxRounds).toBe(10);
     expect(config.agent.maxRetries).toBe(3);
   });
