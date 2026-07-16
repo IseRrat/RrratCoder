@@ -1,0 +1,10 @@
+ FAIL  tests/utils.test.ts > add > should return correct sum
+AssertionError: expected 5 to be 6
+ ❯ tests/utils.test.ts:5:20
+
+ FAIL  tests/api.test.ts > fetchUser > should return user object
+AssertionError: expected { name: 'John' } to have property 'email'
+ ❯ tests/api.test.ts:12:15
+
+Test Files  1 failed | 1 passed (2)
+ Tests  1 failed | 3 passed (4)

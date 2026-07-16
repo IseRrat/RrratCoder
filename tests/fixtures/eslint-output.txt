@@ -1,0 +1,4 @@
+/path/to/project/src/utils.ts
+  3:12  error  Missing semicolon  semi
+  5:1   error  'unusedVar' is assigned but never used  no-unused-vars
+  7:8   warning  'foo' is defined but never used  no-unused-vars
