@@ -8,311 +8,347 @@
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg:         #fff;
-      --bg-hover:   #f8f9fb;
-      --bg-code:    #f5f6f8;
-      --border:     #e4e7ec;
-      --text:       #111827;
-      --text-soft:  #6b7280;
-      --text-faint: #9ca3af;
-      --blue:       #2563eb;
-      --blue-bg:    #eff6ff;
-      --green:      #16a34a;
-      --green-bg:   #f0fdf4;
-      --amber:      #d97706;
-      --amber-bg:   #fffbeb;
-      --red:        #dc2626;
-      --red-bg:     #fef2f2;
-      --purple:     #7c3aed;
-      --purple-bg:  #f5f3ff;
-      --font-ui:    'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
-      --font-code:  'IBM Plex Mono','Cascadia Code','Fira Code',Consolas,monospace;
-      --radius: 10px; --radius-sm:6px;
+      --bg:#fff;--bg2:#f8f9fb;--bg-code:#f4f5f7;--b:#e4e7ec;--t:#111827;--ts:#6b7280;--tf:#9ca3af;
+      --blue:#2563eb;--bl-bg:#eff6ff;--gn:#16a34a;--gn-bg:#f0fdf4;--am:#d97706;--am-bg:#fffbeb;
+      --rd:#dc2626;--rd-bg:#fef2f2;--pu:#7c3aed;--pu-bg:#f5f3ff;
+      --ui:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+      --code:'IBM Plex Mono','Cascadia Code','Fira Code',Consolas,monospace;
+      --r:10px;--rs:6px;
     }
     *{margin:0;padding:0;box-sizing:border-box}
-    body{font-family:var(--font-ui);font-size:15px;color:var(--text);background:var(--bg);-webkit-font-smoothing:antialiased}
-
-    /* ==== TOP BAR ==== */
-    .topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;border-bottom:1px solid var(--border);background:var(--bg);gap:12px}
-    .topbar-left{display:flex;align-items:center;gap:12px}
-    .brand{font-family:var(--font-code);font-size:17px;font-weight:600;color:var(--text);text-decoration:none;letter-spacing:-.02em}
-    .brand span{color:var(--blue)}
-    .key-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;cursor:pointer}
-    .key-dot.on{background:var(--green)}.key-dot.off{background:var(--text-faint)}
-    .key-label{font-size:13px;color:var(--text-soft);cursor:pointer}
-    .key-label:hover{color:var(--text)}
-    .topbar-right{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-faint)}
-    .topbar-right span{padding:2px 8px;border:1px solid var(--border);border-radius:4px;font-family:var(--font-code);font-size:11px}
-
-    /* ==== KEY PANEL ==== */
-    .key-panel{display:none;padding:14px 20px;border-bottom:1px solid var(--border);background:var(--blue-bg);gap:12px;align-items:flex-end;flex-wrap:wrap}
-    .key-panel.show{display:flex}
-    .field-inline{display:flex;flex-direction:column;gap:4px}
-    .field-inline label{font-size:11px;font-weight:600;color:var(--text-soft);text-transform:uppercase;letter-spacing:.04em}
-    .field-inline input{padding:7px 10px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);font-family:var(--font-code);font-size:13px;outline:none;width:200px}
-    .field-inline input:focus{border-color:var(--blue)}
-    .btn{padding:7px 16px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;font-family:var(--font-ui);cursor:pointer;border:none;white-space:nowrap;transition:all .15s}
-    .btn:disabled{opacity:.45;cursor:not-allowed}
-    .btn-blue{background:var(--blue);color:#fff}.btn-blue:hover:not(:disabled){background:#1d4ed8}
-    .btn-ghost{background:transparent;border:1.5px solid var(--border);color:var(--text-soft)}
-    .btn-ghost:hover:not(:disabled){border-color:var(--blue);color:var(--blue)}
-    .btn-danger{border:1.5px solid var(--red);color:var(--red);background:transparent}
-    .btn-danger:hover:not(:disabled){background:var(--red-bg)}
+    body{font-family:var(--ui);font-size:15px;color:var(--t);background:var(--bg);-webkit-font-smoothing:antialiased}
 
     /* ==== LAYOUT ==== */
-    .layout{display:flex;min-height:calc(100vh - 45px)}
-    .main{flex:1;display:flex;flex-direction:column;max-width:820px;margin:0 auto;padding:24px 20px 60px;width:100%}
-    .sidebar{width:300px;flex-shrink:0;border-left:1px solid var(--border);background:var(--bg);padding:20px 18px;overflow-y:auto;display:none}
-    .sidebar.show{display:block}
-    @media(max-width:900px){.sidebar{display:none!important}.main{max-width:100%}}
+    .app{max-width:880px;margin:0 auto;padding:24px 20px 60px}
 
-    /* ==== CHAT ==== */
-    .chat{display:flex;flex-direction:column;gap:20px}
+    /* ==== HEADER ==== */
+    .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:10px}
+    .brand{font-family:var(--code);font-size:18px;font-weight:600;letter-spacing:-.02em}
+    .brand span{color:var(--blue)}
+    .header-right{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--tf)}
+    .header-right span{padding:2px 8px;border:1px solid var(--b);border-radius:4px;font-family:var(--code);font-size:11px}
+    .header-right button{border:1px solid var(--b);border-radius:var(--rs);padding:5px 12px;font-size:12px;font-family:var(--ui);cursor:pointer;background:var(--bg);color:var(--ts);transition:all .15s}
+    .header-right button:hover{border-color:var(--blue);color:var(--blue)}
 
-    /* Input area */
-    .chat-input-area{border:2px solid var(--border);border-radius:var(--radius);padding:16px 18px 14px;transition:border-color .2s}
-    .chat-input-area:focus-within{border-color:var(--blue)}
-    .chat-input-area textarea{width:100%;min-height:64px;border:none;resize:vertical;font-family:var(--font-ui);font-size:16px;color:var(--text);line-height:1.6;outline:none;background:transparent}
-    .chat-input-area textarea::placeholder{color:var(--text-faint)}
-    .chat-input-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);flex-wrap:wrap}
-    .chat-input-footer input{width:150px;padding:6px 10px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font-code);font-size:12px;background:var(--bg-hover);outline:none}
-    .chat-input-footer input:focus{border-color:var(--blue)}
-    .btn-generate{padding:9px 22px;border-radius:var(--radius-sm);font-size:15px;font-weight:600;font-family:var(--font-ui);cursor:pointer;border:none;background:var(--text);color:#fff;transition:all .15s}
-    .btn-generate:hover:not(:disabled){background:#000}
-    .btn-generate:disabled{background:var(--text-faint)}
+    /* ==== API KEY SECTION ==== */
+    .key-section{border:2px solid var(--b);border-radius:var(--r);padding:18px 20px;margin-bottom:20px;transition:border-color .3s}
+    .key-section.ready{border-color:var(--gn);background:var(--gn-bg)}
+    .key-section .key-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+    .key-section .key-title{font-size:16px;font-weight:700}
+    .key-section.ready .key-title{color:var(--gn)}
+    .key-status{font-family:var(--code);font-size:12px;padding:3px 8px;border-radius:3px}
+    .key-status.set{background:var(--gn);color:#fff}
+    .key-status.unset{background:var(--am-bg);color:var(--am);border:1px solid}
+    .key-fields{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+    .key-fields .field{display:flex;flex-direction:column;gap:4px;flex:1;min-width:160px}
+    .key-fields label{font-size:11px;font-weight:600;color:var(--ts);text-transform:uppercase;letter-spacing:.04em}
+    .key-fields input{padding:8px 10px;border:1.5px solid var(--b);border-radius:var(--rs);font-family:var(--code);font-size:13px;outline:none;background:var(--bg);width:100%}
+    .key-fields input:focus{border-color:var(--blue)}
+    .btn{padding:8px 18px;border-radius:var(--rs);font-size:13px;font-weight:600;font-family:var(--ui);cursor:pointer;border:none;transition:all .15s;white-space:nowrap}
+    .btn:disabled{opacity:.45;cursor:not-allowed}
+    .btn-blue{background:var(--blue);color:#fff}.btn-blue:hover:not(:disabled){background:#1d4ed8}
+    .btn-outline{background:transparent;border:1.5px solid var(--b);color:var(--ts)}
+    .btn-outline:hover:not(:disabled){border-color:var(--rd);color:var(--rd)}
+    .key-hint{font-size:12px;color:var(--ts);margin-top:8px;line-height:1.5}
+    .key-hint code{font-family:var(--code);font-size:11px;background:var(--bg2);padding:1px 6px;border-radius:3px;border:1px solid var(--b)}
 
-    /* Messages */
-    .msg{}
-    .msg-user{font-size:16px;font-weight:500;padding:2px 0 6px;color:var(--text)}
-    .msg-agent{font-size:15px;line-height:1.7;color:var(--text);padding:2px 0 0}
-    .msg-agent p{margin-bottom:6px}
-    .msg-agent p:last-child{margin-bottom:0}
-    .msg-loader{font-size:14px;color:var(--text-faint);padding:12px 0;font-style:italic}
+    /* Hide fields when key is set */
+    .key-section.ready .key-fields,.key-section.ready .key-hint{display:none}
 
-    /* Code blocks in chat */
-    .code-card{border:1.5px solid var(--border);border-radius:var(--radius-sm);margin:10px 0;overflow:hidden}
-    .code-card-header{display:flex;align-items:center;justify-content:space-between;padding:6px 14px;background:var(--bg-hover);border-bottom:1px solid var(--border);font-family:var(--font-code);font-size:12px;color:var(--text-soft)}
-    .code-card-header .file-path{font-weight:600}
-    .code-card-header .file-lang{color:var(--text-faint)}
-    .code-card-body{padding:16px 18px;background:var(--bg-code);overflow-x:auto;font-family:var(--font-code);font-size:14px;line-height:1.6;white-space:pre;color:var(--text)}
+    /* ==== PROMPT AREA ==== */
+    .prompt-box{border:2px solid var(--b);border-radius:var(--r);padding:16px 18px 14px;margin-bottom:20px;transition:border-color .2s}
+    .prompt-box:focus-within{border-color:var(--blue)}
+    .prompt-box textarea{width:100%;min-height:72px;border:none;resize:vertical;font-family:var(--ui);font-size:16px;color:var(--t);line-height:1.6;outline:none;background:transparent}
+    .prompt-box textarea::placeholder{color:var(--tf)}
+    .prompt-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;padding-top:10px;border-top:1px solid var(--b);flex-wrap:wrap}
+    .prompt-footer input{width:160px;padding:7px 10px;border:1.5px solid var(--b);border-radius:var(--rs);font-family:var(--code);font-size:12px;background:var(--bg2);outline:none}
+    .prompt-footer input:focus{border-color:var(--blue)}
+    .prompt-footer .hint-msg{font-size:12px;color:var(--rd);display:none}
+    .btn-run{padding:10px 26px;border-radius:var(--rs);font-size:15px;font-weight:600;font-family:var(--ui);cursor:pointer;border:none;background:var(--t);color:#fff;transition:all .15s}
+    .btn-run:hover:not(:disabled){background:#000}
+    .btn-run:disabled{background:var(--tf)}
 
-    /* Inline status blocks */
-    .status-inline{padding:8px 14px;border-radius:var(--radius-sm);font-size:14px;font-weight:500;margin:6px 0}
-    .status-inline.ok{background:var(--green-bg);color:var(--green)}
-    .status-inline.warn{background:var(--amber-bg);color:var(--amber)}
-    .status-inline.err{background:var(--red-bg);color:var(--red)}
-    .status-inline.tool{background:var(--purple-bg);color:var(--purple);font-family:var(--font-code);font-size:13px}
+    /* ==== RESULTS ==== */
+    .results{display:flex;flex-direction:column;gap:14px}
 
-    .summary-line{padding:12px 18px;border-radius:var(--radius);font-size:15px;font-weight:600}
-    .summary-line.ok{background:var(--green-bg);color:var(--green)}
-    .summary-line.err{background:var(--red-bg);color:var(--red)}
-    .summary-line .stat{font-family:var(--font-code);font-size:13px;margin-left:12px}
+    .msg-user{font-size:16px;font-weight:500;color:var(--t);padding:4px 0 2px}
+    .msg-agent{font-size:15px;line-height:1.7;color:var(--t)}
+    .msg-loader{font-size:14px;color:var(--tf);padding:8px 0;font-style:italic}
+    .msg-error{font-size:14px;color:var(--rd);background:var(--rd-bg);padding:10px 14px;border-radius:var(--rs);border:1px solid #fecaca}
+
+    /* Code */
+    .code-block{border:1.5px solid var(--b);border-radius:var(--rs);margin:8px 0;overflow:hidden}
+    .code-block-header{display:flex;align-items:center;justify-content:space-between;padding:6px 14px;background:var(--bg2);border-bottom:1px solid var(--b);font-family:var(--code);font-size:12px}
+    .code-block-header .fp{font-weight:600;color:var(--t)}
+    .code-block-header .fl{color:var(--tf)}
+    .code-block-body{padding:16px 18px;background:var(--bg-code);overflow-x:auto;font-family:var(--code);font-size:14px;line-height:1.6;white-space:pre;color:var(--t)}
+
+    /* Status */
+    .stat-inline{padding:8px 14px;border-radius:var(--rs);font-size:14px;font-weight:500;margin:4px 0}
+    .stat-inline.ok{background:var(--gn-bg);color:var(--gn)}
+    .stat-inline.warn{background:var(--am-bg);color:var(--am)}
+    .stat-inline.err{background:var(--rd-bg);color:var(--rd)}
+    .stat-inline.tool{background:var(--pu-bg);color:var(--pu);font-family:var(--code);font-size:13px}
+
+    .result-summary{padding:12px 18px;border-radius:var(--r);font-size:15px;font-weight:600}
+    .result-summary.ok{background:var(--gn-bg);color:var(--gn)}
+    .result-summary.er{background:var(--rd-bg);color:var(--rd)}
+    .result-summary .st{font-family:var(--code);font-size:13px}
 
     /* Empty */
-    .empty-chat{text-align:center;padding:60px 20px;color:var(--text-faint)}
-    .empty-chat .title{font-size:18px;font-weight:600;margin-bottom:8px;color:var(--text-soft)}
-    .empty-chat .desc{font-size:15px;line-height:1.7;max-width:440px;margin:0 auto}
+    .empty-state{text-align:center;padding:50px 20px;color:var(--tf)}
+    .empty-state .t1{font-size:18px;font-weight:600;margin-bottom:8px;color:var(--ts)}
+    .empty-state .t2{font-size:15px;line-height:1.7;max-width:400px;margin:0 auto}
 
     /* ==== SIDEBAR ==== */
-    .sidebar h3{font-size:13px;font-weight:700;color:var(--text-soft);text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px;margin-top:20px}
-    .sidebar h3:first-child{margin-top:0}
-    .endpoint-card{border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:8px}
-    .endpoint-card .method{font-family:var(--font-code);font-size:11px;font-weight:700;padding:1px 5px;border-radius:3px}
-    .method.get{background:var(--green-bg);color:var(--green)}.method.post{background:var(--blue-bg);color:var(--blue)}
-    .endpoint-card .path{font-family:var(--font-code);font-size:12px;font-weight:600;margin:4px 0 2px;word-break:break-all}
-    .endpoint-card .desc{font-size:12px;color:var(--text-soft);line-height:1.5}
-    .endpoint-card .curl{font-family:var(--font-code);font-size:11px;color:var(--text-faint);background:var(--bg-code);padding:4px 8px;border-radius:4px;margin-top:6px;word-break:break-all;line-height:1.5}
+    .sidebar-overlay{display:none;position:fixed;inset:0;z-index:9}
+    .sidebar-overlay.show{display:block}
+    .sidebar-panel{display:none;position:fixed;top:0;right:0;width:320px;height:100vh;background:var(--bg);border-left:1px solid var(--b);z-index:10;overflow-y:auto;padding:20px;flex-direction:column;gap:16px}
+    .sidebar-panel.show{display:flex}
+    .sidebar-close{text-align:right;font-size:20px;cursor:pointer;color:var(--ts)}
+    .sidebar-panel h3{font-size:13px;font-weight:700;color:var(--ts);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
+    .ep{border:1.5px solid var(--b);border-radius:var(--rs);padding:8px 10px;margin-bottom:6px}
+    .ep .method{font-family:var(--code);font-size:11px;font-weight:700;padding:1px 4px;border-radius:2px}
+    .method.get{background:var(--gn-bg);color:var(--gn)}.method.post{background:var(--bl-bg);color:var(--blue)}
+    .ep .path{font-family:var(--code);font-size:12px;font-weight:600;margin:3px 0;word-break:break-all}
+    .ep .curl{font-family:var(--code);font-size:11px;color:var(--tf);background:var(--bg-code);padding:4px 6px;border-radius:3px;margin-top:4px;word-break:break-all;line-height:1.5}
+    .tool-tag{display:inline-block;font-family:var(--code);font-size:12px;background:var(--pu-bg);color:var(--pu);padding:2px 7px;border-radius:3px;margin:2px 3px 2px 0}
 
-    .tool-tag{display:inline-block;font-family:var(--font-code);font-size:12px;background:var(--purple-bg);color:var(--purple);padding:3px 8px;border-radius:4px;margin:2px 4px 2px 0}
-    .toggle-sidebar-btn{font-size:13px;color:var(--text-soft);cursor:pointer;border:1px solid var(--border);padding:4px 10px;border-radius:var(--radius-sm);background:var(--bg);font-family:var(--font-ui)}
-    .toggle-sidebar-btn:hover{color:var(--text);border-color:var(--blue)}
+    @media(max-width:640px){.app{padding:16px 12px 40px}.key-fields{flex-direction:column}}
   </style>
 </head>
 <body>
+<div class="app">
 
-<div class="topbar">
-  <div class="topbar-left">
-    <a class="brand" href="/">Rrrat<span>Coder</span></a>
-    <span class="key-dot off" id="key-dot" onclick="toggleKeyPanel()" title="API Key"></span>
-    <span class="key-label" id="key-label" onclick="toggleKeyPanel()">No Key</span>
+  <!-- HEADER -->
+  <div class="header">
+    <div class="brand">Rrrat<span>Coder</span></div>
+    <div class="header-right">
+      <button onclick="toggleSidebar()">API Reference</button>
+      <span>v1.0.0</span><span>56 tests</span><span>DeepSeek</span>
+    </div>
   </div>
-  <div class="topbar-right">
-    <button class="toggle-sidebar-btn" onclick="toggleSidebar()">API Reference</button>
-    <span>v1.0.0</span><span>56 tests</span><span>DeepSeek</span>
+
+  <!-- API KEY CONFIG — always visible -->
+  <div class="key-section" id="key-section">
+    <div class="key-head">
+      <span class="key-title">DeepSeek API Key</span>
+      <span class="key-status unset" id="key-status">Not Set</span>
+    </div>
+    <div class="key-fields">
+      <div class="field">
+        <label>Master password (set a passphrase)</label>
+        <input type="password" id="key-pw" placeholder="e.g. mypass123" autocomplete="off">
+      </div>
+      <div class="field">
+        <label>API Key (sk-...)</label>
+        <input type="password" id="key-api" placeholder="sk-..." autocomplete="off">
+      </div>
+      <button class="btn btn-blue" id="btn-save-key" onclick="saveKey()">Save Key</button>
+      <button class="btn btn-outline" id="btn-clear-key" onclick="clearKey()">Clear</button>
+    </div>
+    <div class="key-hint">Key is encrypted with AES-256-GCM and stored at <code>~/.rrratcoder/credentials.enc</code>. You will need the Master password each time you run a task.</div>
   </div>
+
+  <!-- PROMPT -->
+  <div class="prompt-box">
+    <textarea id="prompt" placeholder="Describe the coding task...
+
+e.g. Create a file hello.ts with a TypeScript greet function
+e.g. Write a todo REST API in Express
+e.g. Find and fix all type errors in the project" rows="3"></textarea>
+    <div class="prompt-footer">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <input type="password" id="task-pw" placeholder="Master password" autocomplete="off">
+        <span class="hint-msg" id="hint-pw">Enter master password</span>
+      </div>
+      <button class="btn-run" id="btn-run" disabled onclick="runTask()">Generate</button>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="results" id="results">
+    <div class="empty-state">
+      <div class="t1">AI Coding Agent</div>
+      <div class="t2">Set your DeepSeek API Key above, type a coding task, enter your master password, and click Generate. The agent will create files, run validation, and auto-correct.</div>
+    </div>
+  </div>
+
 </div>
 
-<div class="key-panel" id="key-panel">
-  <div class="field-inline"><label>Master Password</label><input type="password" id="key-password" placeholder="Encryption passphrase" autocomplete="off"></div>
-  <div class="field-inline"><label>DeepSeek API Key</label><input type="password" id="key-apikey" placeholder="sk-..." autocomplete="off"></div>
-  <button class="btn btn-blue" id="btn-store" onclick="storeKey()">Save</button>
-  <button class="btn btn-danger" onclick="clearKey()">Clear</button>
-</div>
-
-<div class="layout">
-  <div class="main">
-    <div class="chat" id="chat">
-      <!-- Input -->
-      <div class="chat-input-area">
-        <textarea id="prompt" placeholder="Describe what you want to build...
-
-e.g. Create a TypeScript file hello.ts that exports a greet function
-e.g. Write a REST API with Express for todo CRUD
-e.g. Fix all type errors in the src/ directory" rows="3"></textarea>
-        <div class="chat-input-footer">
-          <input type="password" id="task-password" placeholder="Master password" autocomplete="off">
-          <button class="btn-generate" id="btn-run" disabled onclick="runTask()">Generate</button>
-        </div>
-      </div>
-
-      <!-- Messages appear here -->
-      <div class="empty-chat" id="empty-hint">
-        <div class="title">RrratCoder - AI Coding Agent</div>
-        <div class="desc">Set your DeepSeek API Key in the top bar, describe your task, and the agent will generate code, run validation, and auto-correct errors. Click "API Reference" to see available endpoints.</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- API Reference Sidebar -->
-  <aside class="sidebar" id="sidebar">
-    <h3>API Endpoints</h3>
-    <div class="endpoint-card">
-      <span class="method get">GET</span>
-      <div class="path">/api/health</div>
-      <div class="desc">Server health check with uptime</div>
-      <div class="curl">curl http://localhost:3000/api/health</div>
-    </div>
-    <div class="endpoint-card">
-      <span class="method get">GET</span>
-      <div class="path">/api/info</div>
-      <div class="desc">Project info: name, version, modules, test stats</div>
-      <div class="curl">curl http://localhost:3000/api/info</div>
-    </div>
-    <div class="endpoint-card">
-      <span class="method get">GET</span>
-      <div class="path">/api/key/status</div>
-      <div class="desc">Check if DeepSeek API Key is configured</div>
-      <div class="curl">curl http://localhost:3000/api/key/status</div>
-    </div>
-    <div class="endpoint-card">
-      <span class="method post">POST</span>
-      <div class="path">/api/key/set</div>
-      <div class="desc">Store API Key (AES-256-GCM encrypted)</div>
-      <div class="curl">curl -X POST http://localhost:3000/api/key/set -H "Content-Type: application/json" -d '{"password":"mypass","apiKey":"sk-..."}'</div>
-    </div>
-    <div class="endpoint-card">
-      <span class="method post">POST</span>
-      <div class="path">/api/key/clear</div>
-      <div class="desc">Delete stored credentials</div>
-      <div class="curl">curl -X POST http://localhost:3000/api/key/clear</div>
-    </div>
-    <div class="endpoint-card" style="border-color:var(--purple);border-width:2px;">
-      <span class="method post">POST</span>
-      <div class="path">/api/run</div>
-      <div class="desc">Execute a coding task with the agent</div>
-      <div class="curl">curl -X POST http://localhost:3000/api/run -H "Content-Type: application/json" -d '{"task":"Create hello.ts","password":"mypass"}'</div>
-    </div>
-
-    <h3>Agent Tools</h3>
-    <div><span class="tool-tag">read_file</span><span class="tool-tag">write_file</span><span class="tool-tag">shell</span><span class="tool-tag">grep</span></div>
-    <p style="font-size:12px;color:var(--text-soft);margin-top:8px;line-height:1.5;">The agent uses these tools to read/write files, execute shell commands, and search code.</p>
-
-    <h3>Harness Modules</h3>
-    <div id="mod-tags"><span style="font-size:12px;color:var(--text-faint);">Loading...</span></div>
-    <p id="mc-text" style="font-size:13px;font-weight:600;color:var(--amber);margin-top:8px;"></p>
-  </aside>
+<!-- API Reference Sidebar -->
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+<div class="sidebar-panel" id="sidebar-panel">
+  <div class="sidebar-close" onclick="toggleSidebar()">&times;</div>
+  <h3>API Endpoints</h3>
+  <div class="ep"><span class="method get">GET</span><div class="path">/api/health</div><div class="curl">curl localhost:3000/api/health</div></div>
+  <div class="ep"><span class="method get">GET</span><div class="path">/api/info</div><div class="curl">curl localhost:3000/api/info</div></div>
+  <div class="ep"><span class="method get">GET</span><div class="path">/api/key/status</div><div class="curl">curl localhost:3000/api/key/status</div></div>
+  <div class="ep"><span class="method post">POST</span><div class="path">/api/key/set</div><div class="curl">curl -X POST localhost:3000/api/key/set -H 'Content-Type: application/json' -d '{"password":"p","apiKey":"sk-"}'</div></div>
+  <div class="ep"><span class="method post">POST</span><div class="path">/api/key/clear</div><div class="curl">curl -X POST localhost:3000/api/key/clear</div></div>
+  <div class="ep" style="border-color:var(--pu)"><span class="method post">POST</span><div class="path">/api/run</div><div class="curl">curl -X POST localhost:3000/api/run -H 'Content-Type: application/json' -d '{"task":"...","password":"p"}'</div></div>
+  <h3>Agent Tools</h3>
+  <div><span class="tool-tag">read_file</span><span class="tool-tag">write_file</span><span class="tool-tag">shell</span><span class="tool-tag">grep</span></div>
+  <h3>Modules</h3>
+  <div id="mod-tags"><span style="font-size:12px;color:var(--tf)">Loading...</span></div>
+  <p id="mc-text" style="font-size:13px;font-weight:600;color:var(--am);margin-top:6px"></p>
 </div>
 
 <script>
-var keyOk = false;
+var keyReady = false;
 function $(id){return document.getElementById(id)}
 
-// -- Key --
-function toggleKeyPanel(){$('key-panel').classList.toggle('show')}
-function toggleSidebar(){$('sidebar').classList.toggle('show')}
-
-async function refreshKey(){
-  try{var r=await fetch('/api/key/status');var d=await r.json();keyOk=d.configured;$('key-dot').className='key-dot '+(keyOk?'on':'off');$('key-label').textContent=keyOk?'Key ready':'No Key';$('btn-run').disabled=!keyOk}catch(e){$('key-label').textContent='Offline'}
-}
-async function storeKey(){
-  var pw=$('key-password').value,key=$('key-apikey').value.trim();if(!pw||!key)return;
-  $('btn-store').disabled=true;$('btn-store').textContent='Saving...';
-  try{var r=await fetch('/api/key/set',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pw,apiKey:key})});var d=await r.json();if(d.ok){$('key-password').value='';$('key-apikey').value='';$('key-panel').classList.remove('show');refreshKey()}else{alert(d.error)}}catch(e){alert('Error: '+e.message)}
-  $('btn-store').disabled=false;$('btn-store').textContent='Save'
-}
-async function clearKey(){if(!confirm('Delete stored API key?'))return;try{await fetch('/api/key/clear',{method:'POST'});refreshKey()}catch(e){}}
-
-// -- Info --
-async function loadInfo(){
-  try{var r=await fetch('/api/info');var d=await r.json();
-    $('mod-tags').innerHTML=d.modules.map(function(m){return'<span class="tool-tag">'+m+'</span>'}).join('');
-    $('mc-text').textContent='Main: '+d.mainContribution;
-  }catch(e){}
+// ==== SIDEBAR ====
+function toggleSidebar(){
+  document.getElementById('sidebar-panel').classList.toggle('show');
+  document.getElementById('sidebar-overlay').classList.toggle('show');
 }
 
-// -- Run --
+// ==== KEY ====
+async function checkKey(){
+  try{
+    var r=await fetch('/api/key/status');var d=await r.json();keyReady=d.configured;
+    updateKeyUI();
+  }catch(e){console.error('Key check failed:',e)}
+}
+function updateKeyUI(){
+  var sec=document.getElementById('key-section');
+  var st=document.getElementById('key-status');
+  if(keyReady){
+    sec.classList.add('ready');st.classList.remove('unset');st.classList.add('set');st.textContent='Ready';
+    document.getElementById('btn-run').disabled=false;
+    document.getElementById('btn-clear-key').style.display='';
+  }else{
+    sec.classList.remove('ready');st.classList.remove('set');st.classList.add('unset');st.textContent='Not Set';
+    document.getElementById('btn-run').disabled=true;
+    document.getElementById('btn-clear-key').style.display='none';
+  }
+}
+
+async function saveKey(){
+  var pw=document.getElementById('key-pw').value,key=document.getElementById('key-api').value.trim();
+  if(!pw){alert('Please enter a master password');return}
+  if(!key){alert('Please enter your DeepSeek API Key (starts with sk-)');return}
+  var btn=document.getElementById('btn-save-key');btn.disabled=true;btn.textContent='Saving...';
+  try{
+    var r=await fetch('/api/key/set',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pw,apiKey:key})});
+    var d=await r.json();
+    if(d.ok){keyReady=true;updateKeyUI();document.getElementById('key-pw').value='';document.getElementById('key-api').value=''}else{alert(d.error)}
+  }catch(e){alert('Error: '+e.message)}
+  btn.disabled=false;btn.textContent='Save Key'
+}
+
+async function clearKey(){
+  if(!confirm('Delete stored API key?'))return;
+  try{await fetch('/api/key/clear',{method:'POST'});keyReady=false;updateKeyUI()}catch(e){}
+}
+
+// ==== RUN ====
 async function runTask(){
-  var task=$('prompt').value.trim(),pw=$('task-password').value;if(!task||!pw)return;
-  var btn=$('btn-run');btn.disabled=true;btn.textContent='Running...';
-  if($('empty-hint'))$('empty-hint').style.display='none';
-  // loading
-  $('chat').insertAdjacentHTML('beforeend','<div class="msg-user">'+esc(task)+'</div><div class="msg-loader" id="loader">Agent is working on your request...</div>');
-  $('prompt').value='';$('prompt').style.height='auto';
+  var task=document.getElementById('prompt').value.trim();
+  var pw=document.getElementById('task-pw').value;
+  var hint=document.getElementById('hint-pw');
+
+  if(!task){hint.textContent='Enter a task description';hint.style.display='inline';return}
+  if(!pw){hint.textContent='Enter master password';hint.style.display='inline';return}
+  hint.style.display='none';
+  if(!keyReady){alert('Please configure your API Key first');return}
+
+  var btn=document.getElementById('btn-run');btn.disabled=true;btn.textContent='Running...';
+
+  // Hide empty state
+  var empty=document.querySelector('.empty-state');if(empty)empty.style.display='none';
+
+  // Add loading
+  var div=document.createElement('div');div.className='msg-loader';div.id='loader';div.textContent='Agent is working...';document.getElementById('results').appendChild(div);
+  document.getElementById('prompt').value='';
+
   try{
     var r=await fetch('/api/run',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({task:task,password:pw})});
     var d=await r.json();
     var ld=document.getElementById('loader');if(ld)ld.remove();
     if(d.ok)renderResult(task,d.result);else showError(d.error);
   }catch(e){var ld=document.getElementById('loader');if(ld)ld.remove();showError('Network error: '+e.message)}
-  btn.disabled=!keyOk;btn.textContent='Generate';$('task-password').value=''
+
+  btn.disabled=!keyReady;btn.textContent='Generate';document.getElementById('task-pw').value=''
 }
 
 function showError(msg){
-  $('chat').insertAdjacentHTML('beforeend','<div class="status-inline err">Error: '+esc(msg)+'</div>')
+  var div=document.createElement('div');div.className='msg-error';div.textContent='Error: '+msg;document.getElementById('results').appendChild(div)
 }
 
-// -- Render --
+// ==== RENDER ====
 function renderResult(task,result){
-  var h='',log=result.sessionLog||[];
+  var frag=document.createDocumentFragment();
+
+  // User msg
+  var u=document.createElement('div');u.className='msg-user';u.textContent=task;frag.appendChild(u);
+
+  var log=result.sessionLog||[];
   log.forEach(function(rec){
     // LLM text
     if(rec.llmResponse&&rec.llmResponse.message&&rec.llmResponse.message.content){
-      var t=rec.llmResponse.message.content.trim();if(t)h+='<div class="msg-agent"><p>'+esc(t)+'</p></div>'
+      var t=rec.llmResponse.message.content.trim();if(!t)return;
+      var m=document.createElement('div');m.className='msg-agent';m.textContent=t;frag.appendChild(m)
     }
-    // Tool calls
-    if(rec.toolCall){
-      var tc=rec.toolCall,nm=tc.function.name,args={};try{args=JSON.parse(tc.function.arguments)}catch(e){}
-      if(nm==='write_file'&&args.path&&args.content){
-        var ext=(args.path||'').split('.').pop(),lang='';
-        if(ext==='ts')lang='TypeScript';else if(ext==='js')lang='JavaScript';else if(ext==='json')lang='JSON';else if(ext==='html')lang='HTML';else if(ext==='css')lang='CSS';else lang=ext||'';
-        h+='<div class="code-card"><div class="code-card-header"><span class="file-path">'+esc(args.path)+'</span><span class="file-lang">'+lang+'</span></div><div class="code-card-body">'+esc(args.content)+'</div></div>'
-      }else if(nm==='shell'&&args.command){
-        h+='<div class="code-card"><div class="code-card-header"><span class="file-path">$ '+esc(args.command)+'</span></div></div>';
-        if(rec.toolResult&&rec.toolResult.output)h+='<div class="code-card" style="margin-top:2px"><div class="code-card-body">'+esc(rec.toolResult.output)+'</div></div>'
-      }else if(nm==='read_file'&&rec.toolResult&&rec.toolResult.output){
-        h+='<div class="code-card"><div class="code-card-header"><span class="file-path">'+(args.path?esc(args.path):'read_file')+'</span></div><div class="code-card-body">'+esc(rec.toolResult.output)+'</div></div>'
-      }else{
-        h+='<div class="status-inline tool">'+nm+(args.path?' '+esc(args.path):'')+'</div>'
+    if(!rec.toolCall)return;
+    var tc=rec.toolCall,nm=tc.function.name,args={};try{args=JSON.parse(tc.function.arguments)}catch(e){}
+
+    if(nm==='write_file'&&args.path&&args.content){
+      var ext=(args.path||'').split('.').pop(),lang=ext==='ts'?'TypeScript':ext==='js'?'JavaScript':ext==='json'?'JSON':ext==='html'?'HTML':ext==='css'?'CSS':ext||'';
+      var cb=document.createElement('div');cb.className='code-block';
+      cb.innerHTML='<div class="code-block-header"><span class="fp">'+esc(args.path)+'</span><span class="fl">'+lang+'</span></div><div class="code-block-body">'+esc(args.content)+'</div>';
+      frag.appendChild(cb)
+    }else if(nm==='shell'&&args.command){
+      var cb=document.createElement('div');cb.className='code-block';
+      cb.innerHTML='<div class="code-block-header"><span class="fp">$ '+esc(args.command)+'</span></div>';
+      frag.appendChild(cb);
+      if(rec.toolResult&&rec.toolResult.output){
+        var co=document.createElement('div');co.className='code-block';co.style.marginTop='2px';
+        co.innerHTML='<div class="code-block-body">'+esc(rec.toolResult.output)+'</div>';frag.appendChild(co)
       }
-      if(rec.toolResult&&!rec.toolResult.success&&rec.toolResult.error)h+='<div class="status-inline err">Tool error: '+esc(rec.toolResult.error)+'</div>'
+    }else if(nm==='read_file'&&rec.toolResult&&rec.toolResult.output){
+      var cb=document.createElement('div');cb.className='code-block';
+      cb.innerHTML='<div class="code-block-header"><span class="fp">'+(args.path?esc(args.path):'read_file')+'</span></div><div class="code-block-body">'+esc(rec.toolResult.output)+'</div>';
+      frag.appendChild(cb)
+    }else{
+      var s=document.createElement('div');s.className='stat-inline tool';
+      s.textContent=nm+(args.path?' '+args.path:'');frag.appendChild(s)
     }
-    // Guard
-    if(rec.guardResult&&!rec.guardResult.allowed)h+='<div class="status-inline err">Blocked: '+esc(rec.guardResult.reason||'')+' (Risk: '+esc(rec.guardResult.risk||'')+')</div>'
-    // Validation
+
+    if(rec.toolResult&&!rec.toolResult.success&&rec.toolResult.error){
+      var e=document.createElement('div');e.className='stat-inline err';e.textContent='Tool error: '+rec.toolResult.error;frag.appendChild(e)
+    }
+    if(rec.guardResult&&!rec.guardResult.allowed){
+      var g=document.createElement('div');g.className='stat-inline err';g.textContent='Blocked: '+(rec.guardResult.reason||'')+' (Risk: '+(rec.guardResult.risk||'')+')';frag.appendChild(g)
+    }
     if(rec.feedbackResult){
-      var fb=rec.feedbackResult;h+='<div class="status-inline '+(fb.passed?'ok':'warn')+'">'+(fb.passed?'Validation passed':'Validation failed - retrying');
-      if(fb.errors&&fb.errors.length)fb.errors.forEach(function(e){h+='<br>'+esc(e.category+': '+e.message)});
-      h+='</div>'
+      var fb=rec.feedbackResult;var v=document.createElement('div');v.className='stat-inline '+(fb.passed?'ok':'warn');
+      var txt=fb.passed?'Validation passed':'Validation failed - retrying';
+      if(fb.errors&&fb.errors.length)txt+='\n'+fb.errors.map(function(e){return e.category+': '+e.message}).join('\n');
+      v.textContent=txt;v.style.whiteSpace='pre-line';frag.appendChild(v)
     }
   });
+
   // Summary
-  var ok=result.status==='success';h+='<div class="summary-line '+(ok?'ok':'err')+'">'+(ok?'Task completed':'Task ended')+'<span class="stat">Status: '+result.status+' | Rounds: '+result.rounds+'</span><br><span style="font-size:13px;font-weight:400">'+esc(result.summary||'')+'</span></div>';
-  $('chat').insertAdjacentHTML('beforeend',h)
+  var ok=result.status==='success';
+  var sm=document.createElement('div');sm.className='result-summary '+(ok?'ok':'er');
+  sm.innerHTML=(ok?'Task completed':'Task ended')+'<span class="st">&nbsp;Status: '+result.status+' | Rounds: '+result.rounds+'</span><br><span style="font-size:13px;font-weight:400">'+esc(result.summary||'')+'</span>';
+  frag.appendChild(sm);
+
+  document.getElementById('results').appendChild(frag)
 }
 
 function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function loadInfo(){
+  fetch('/api/info').then(function(r){return r.json()}).then(function(d){
+    document.getElementById('mod-tags').innerHTML=d.modules.map(function(m){return'<span class="tool-tag">'+m+'</span>'}).join('');
+    document.getElementById('mc-text').textContent='Main: '+d.mainContribution
+  }).catch(function(){})
+}
 
-refreshKey();loadInfo();
+// ==== INIT ====
+checkKey();loadInfo();
 </script>
 </body>
 </html>
