@@ -52,8 +52,8 @@
     .key-hint{font-size:12px;color:var(--ts);margin-top:8px;line-height:1.5}
     .key-hint code{font-family:var(--code);font-size:11px;background:var(--bg2);padding:1px 6px;border-radius:3px;border:1px solid var(--b)}
 
-    /* Hide fields when key is set */
-    .key-section.ready .key-fields,.key-section.ready .key-hint{display:none}
+    /* Always visible — ready state shows green styling but keeps fields */
+    .key-section.ready .key-hint{display:none}
 
     /* ==== PROMPT AREA ==== */
     .prompt-box{border:2px solid var(--b);border-radius:var(--r);padding:16px 18px 14px;margin-bottom:20px;transition:border-color .2s}
@@ -226,14 +226,17 @@ async function checkKey(){
 function updateKeyUI(){
   var sec=document.getElementById('key-section');
   var st=document.getElementById('key-status');
+  var btnSave=document.getElementById('btn-save-key');
   if(keyReady){
     sec.classList.add('ready');st.classList.remove('unset');st.classList.add('set');st.textContent='Ready';
     document.getElementById('btn-run').disabled=false;
     document.getElementById('btn-clear-key').style.display='';
+    btnSave.textContent='Update Key';
   }else{
     sec.classList.remove('ready');st.classList.remove('set');st.classList.add('unset');st.textContent='Not Set';
     document.getElementById('btn-run').disabled=true;
     document.getElementById('btn-clear-key').style.display='none';
+    btnSave.textContent='Save Key';
   }
 }
 
