@@ -5,341 +5,370 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>RrratCoder · Agent Command Center</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-root: #06090f;
-      --bg-surface: #0d1117;
-      --bg-elevated: #161b22;
-      --bg-input: #0d1117;
-      --border: #21262d;
-      --border-active: #30363d;
-      --text-primary: #e6edf3;
-      --text-secondary: #8b949e;
-      --text-muted: #484f58;
-      --accent: #58a6ff;
-      --accent-glow: rgba(88,166,255,0.3);
-      --green: #3fb950;
-      --green-dim: #1a4d1a;
-      --amber: #d29922;
-      --amber-dim: #4d3a1a;
-      --red: #f85149;
-      --red-dim: #4d1a1a;
-      --purple: #bc8cff;
-      --font-mono: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', Consolas, monospace;
-      --font-display: 'Rajdhani', system-ui, sans-serif;
+      --bg: #fafbfc;
+      --bg-surface: #ffffff;
+      --bg-raised: #f5f6f8;
+      --bg-input: #f8f9fa;
+      --border: #e1e4e8;
+      --border-focus: #0969da;
+      --text: #1f2328;
+      --text-secondary: #656d76;
+      --text-muted: #8c959f;
+      --accent: #0969da;
+      --accent-light: #ddf4ff;
+      --accent-border: #54aeff;
+      --green: #1a7f37;
+      --green-bg: #dafbe1;
+      --amber: #9a6700;
+      --amber-bg: #fff8c5;
+      --red: #cf222e;
+      --red-bg: #ffebe9;
+      --purple: #8250df;
+      --purple-bg: #fbefff;
+      --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+      --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-code: 'IBM Plex Mono', 'Cascadia Code', 'Fira Code', Consolas, monospace;
+      --font-size-sm: 13px;
+      --font-size-base: 14px;
+      --font-size-lg: 16px;
+      --font-size-xl: 20px;
+      --font-size-2xl: 24px;
+      --radius: 8px;
     }
 
-    * { margin:0; padding:0; box-sizing:border-box; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      font-family: var(--font-mono);
-      background: var(--bg-root);
-      color: var(--text-primary);
+      font-family: var(--font-ui);
+      font-size: var(--font-size-base);
+      background: var(--bg);
+      color: var(--text);
       min-height: 100vh;
-      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
     }
 
-    /* Background grid effect */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba(48,54,61,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(48,54,61,0.03) 1px, transparent 1px);
-      background-size: 32px 32px;
-      pointer-events: none;
-      z-index: 0;
+    /* ========== LAYOUT ========== */
+    .app {
+      display: flex; flex-direction: column;
+      max-width: 1440px; margin: 0 auto; min-height: 100vh;
     }
-
-    /* Scanline overlay */
-    body::after {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background: repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 2px,
-        rgba(0,0,0,0.015) 2px,
-        rgba(0,0,0,0.015) 4px
-      );
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    /* ===== LAYOUT ===== */
-    .app { position:relative; z-index:1; display:flex; flex-direction:column; height:100vh; }
 
     /* ---- Header ---- */
     .header {
-      display:flex; align-items:center; justify-content:space-between;
-      padding:0.75rem 1.25rem;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 24px;
       background: var(--bg-surface);
       border-bottom: 1px solid var(--border);
-      flex-shrink:0;
+      flex-shrink: 0;
+      gap: 16px;
     }
-    .header-left { display:flex; align-items:center; gap:0.75rem; }
+    .header-left { display: flex; align-items: center; gap: 14px; }
     .logo {
-      font-family: var(--font-display);
-      font-size:1.25rem; font-weight:700; color: var(--text-primary);
-      letter-spacing: 0.04em;
+      font-family: var(--font-code); font-size: var(--font-size-xl); font-weight: 600;
+      color: var(--text); letter-spacing: -0.02em;
     }
-    .logo span { color: var(--accent); }
-    .agent-badge {
-      display:flex; align-items:center; gap:0.4rem;
-      font-size:0.7rem; color: var(--text-secondary);
-      background: var(--bg-elevated); padding:0.2rem 0.6rem; border-radius:4px;
+    .logo-accent { color: var(--accent); }
+    .agent-indicator {
+      display: flex; align-items: center; gap: 8px;
+      font-size: var(--font-size-sm); font-weight: 500; color: var(--text-secondary);
+      background: var(--bg-raised); padding: 4px 12px; border-radius: 20px;
       border: 1px solid var(--border);
     }
-    .pulse {
-      width:8px; height:8px; border-radius:50%; background: var(--green);
-      box-shadow: 0 0 6px var(--green);
-      animation: pulse 2s ease-in-out infinite;
+    .indicator-dot {
+      width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+      background: var(--green); transition: background 0.3s;
     }
-    .pulse.off { background: var(--text-muted); box-shadow: none; animation: none; }
-    @keyframes pulse {
-      0%, 100% { opacity:1; }
-      50% { opacity:0.4; }
+    .indicator-dot.off { background: var(--border); }
+    .header-stats {
+      display: flex; align-items: center; gap: 4px;
+      font-size: var(--font-size-sm); color: var(--text-muted);
     }
-    .header-right { display:flex; align-items:center; gap:0.5rem; font-size:0.7rem; color: var(--text-muted); }
-    .header-right .stat { padding:0.15rem 0.5rem; background:var(--bg-elevated); border-radius:3px; border:1px solid var(--border); }
+    .header-stats span {
+      padding: 3px 10px; background: var(--bg-raised); border-radius: 4px;
+      border: 1px solid var(--border); font-family: var(--font-code);
+    }
 
     /* ---- Main ---- */
-    .main { display:flex; flex:1; overflow:hidden; }
+    .main { display: flex; flex: 1; overflow: hidden; }
 
     /* ---- Sidebar ---- */
     .sidebar {
-      width:380px; flex-shrink:0;
-      display:flex; flex-direction:column;
-      border-right:1px solid var(--border);
+      width: 420px; flex-shrink: 0;
+      display: flex; flex-direction: column;
       background: var(--bg-surface);
-      overflow-y:auto;
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
     }
-    .sidebar-section {
-      padding:1rem 1.25rem;
-      border-bottom:1px solid var(--border);
+    .sidebar-block {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
     }
-    .sidebar-section:last-child { border-bottom:none; }
-    .section-label {
-      font-size:0.65rem; font-weight:600; color: var(--text-muted);
-      text-transform:uppercase; letter-spacing:0.1em; margin-bottom:0.75rem;
-      font-family: var(--font-mono);
+    .sidebar-block:last-child { border-bottom: none; flex: 1; }
+    .block-title {
+      font-size: var(--font-size-sm); font-weight: 600; color: var(--text-secondary);
+      text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 14px;
     }
-    .key-status-row {
-      display:flex; align-items:center; gap:0.5rem; margin-bottom:0.75rem;
-      font-size:0.75rem;
-    }
-    .key-status-row .dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
-    .dot-set { background:var(--green); box-shadow:0 0 6px var(--green); }
-    .dot-unset { background:var(--text-muted); }
 
-    /* Inputs */
-    .input-group { margin-bottom:0.6rem; }
-    .input-group:last-child { margin-bottom:0; }
-    .input-group label {
-      display:block; font-size:0.65rem; color: var(--text-secondary);
-      margin-bottom:0.3rem; text-transform:uppercase; letter-spacing:0.05em;
+    /* Key status row */
+    .key-status-row {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
+      font-size: var(--font-size-base); font-weight: 500;
+    }
+    .key-status-row .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .dot-active { background: var(--green); }
+    .dot-inactive { background: var(--border); border: 1.5px solid var(--text-muted); }
+
+    /* Forms */
+    .field { margin-bottom: 12px; }
+    .field:last-child { margin-bottom: 0; }
+    .field-label {
+      display: block; font-size: var(--font-size-sm); font-weight: 500;
+      color: var(--text); margin-bottom: 5px;
     }
     input, textarea {
-      width:100%; padding:0.5rem 0.65rem;
-      background: var(--bg-input); border:1px solid var(--border);
-      color: var(--text-primary); font-family: var(--font-mono); font-size:0.75rem;
-      border-radius:4px; outline:none;
+      width: 100%; padding: 10px 12px;
+      background: var(--bg-input); border: 1.5px solid var(--border);
+      color: var(--text); font-family: var(--font-code); font-size: var(--font-size-base);
+      border-radius: var(--radius); outline: none;
       transition: border-color 0.15s, box-shadow 0.15s;
     }
     input:focus, textarea:focus {
       border-color: var(--accent);
-      box-shadow: 0 0 0 2px var(--accent-glow);
+      box-shadow: 0 0 0 3px rgba(9,105,218,0.12);
     }
     input::placeholder, textarea::placeholder { color: var(--text-muted); }
-    textarea { resize:none; min-height:44px; }
-    .input-hint {
-      font-size:0.6rem; color: var(--text-muted); margin-top:0.25rem;
-      line-height:1.4;
+    textarea { resize: none; min-height: 72px; line-height: 1.5; }
+    .field-hint {
+      font-size: var(--font-size-sm); color: var(--text-muted); margin-top: 6px;
+      line-height: 1.5;
     }
-    .input-hint code {
-      background:var(--bg-elevated); padding:0.1rem 0.3rem; border-radius:2px;
-      font-size:0.6rem;
+    .field-hint code {
+      background: var(--bg-raised); padding: 1px 6px; border-radius: 4px;
+      font-family: var(--font-code); font-size: 12px; border: 1px solid var(--border);
     }
 
     /* Buttons */
-    .btn-row { display:flex; gap:0.5rem; }
+    .btn-group { display: flex; gap: 8px; }
     .btn {
-      padding:0.45rem 0.9rem; border:none; border-radius:4px;
-      font-family: var(--font-mono); font-size:0.7rem; font-weight:600; cursor:pointer;
-      transition: all 0.15s; outline:none; flex:1; text-align:center;
+      padding: 10px 18px; border: 1.5px solid transparent; border-radius: var(--radius);
+      font-family: var(--font-ui); font-size: var(--font-size-base); font-weight: 600;
+      cursor: pointer; transition: all 0.15s; outline: none; text-align: center;
+      line-height: 1.2;
     }
-    .btn:disabled { opacity:0.4; cursor:not-allowed; }
-    .btn-primary { background:var(--accent); color:#fff; }
-    .btn-primary:hover:not(:disabled) { background:#79b8ff; }
-    .btn-accent { background:var(--green); color:#000; }
-    .btn-accent:hover:not(:disabled) { background:#4cc762; }
-    .btn-ghost {
-      background:transparent; border:1px solid var(--border); color:var(--text-secondary);
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .btn-primary:hover:not(:disabled) { background: #0860ca; }
+    .btn-success { background: var(--green); color: #fff; border-color: var(--green); flex: 1; }
+    .btn-success:hover:not(:disabled) { background: #157030; }
+    .btn-outline {
+      background: var(--bg-surface); border-color: var(--border); color: var(--text-secondary);
     }
-    .btn-ghost:hover:not(:disabled) { border-color:var(--accent); color:var(--accent); }
-    .btn-danger { background:transparent; border:1px solid var(--red); color:var(--red); flex:0.3; }
-    .btn-danger:hover:not(:disabled) { background:var(--red); color:#fff; }
+    .btn-outline:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+    .btn-danger {
+      background: var(--bg-surface); border-color: var(--red); color: var(--red);
+      padding-left: 14px; padding-right: 14px;
+    }
+    .btn-danger:hover:not(:disabled) { background: var(--red-bg); }
 
-    /* ---- Console (main area) ---- */
+    /* Modules */
+    .module-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+    .module-tag {
+      font-size: 12px; font-weight: 500; font-family: var(--font-code);
+      background: var(--accent-light); color: var(--accent);
+      padding: 3px 10px; border-radius: 5px; border: 1px solid var(--accent-border);
+    }
+    .main-contribution {
+      font-size: var(--font-size-base); font-weight: 600; color: var(--amber);
+      padding: 8px 14px; background: var(--amber-bg); border-radius: var(--radius);
+      border: 1px solid #dfb31730; display: inline-block;
+    }
+
+    /* ---- Console ---- */
     .console-area {
-      flex:1; display:flex; flex-direction:column;
-      background: var(--bg-root);
-      overflow:hidden;
+      flex: 1; display: flex; flex-direction: column;
+      background: var(--bg); overflow: hidden;
     }
-    .console-header {
-      display:flex; align-items:center; justify-content:space-between;
-      padding:0.5rem 1rem;
-      border-bottom:1px solid var(--border);
-      background:var(--bg-surface);
-      flex-shrink:0;
+    .console-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 20px;
+      background: var(--bg-surface); border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
     }
-    .console-tabs { display:flex; gap:0; }
+    .console-tabs { display: flex; gap: 0; }
     .console-tab {
-      padding:0.35rem 0.75rem; font-size:0.7rem; color:var(--text-muted);
-      border-bottom:2px solid transparent; cursor:pointer; font-family:var(--font-mono);
-      transition: color 0.15s, border-color 0.15s;
+      padding: 6px 16px; font-size: var(--font-size-base); font-weight: 500;
+      color: var(--text-muted); border-bottom: 2px solid transparent; cursor: pointer;
+      font-family: var(--font-code); transition: color 0.15s, border-color 0.15s;
     }
-    .console-tab.active { color:var(--accent); border-color:var(--accent); }
-    .console-actions { display:flex; gap:0.5rem; }
-    .console-actions button {
-      background:transparent; border:none; color:var(--text-muted); cursor:pointer;
-      font-size:0.8rem; padding:0.15rem 0.4rem; border-radius:3px;
-      transition: color 0.15s, background 0.15s;
+    .console-tab.active { color: var(--accent); border-color: var(--accent); }
+    .console-action {
+      background: none; border: none; color: var(--text-muted); cursor: pointer;
+      font-size: 16px; padding: 4px 8px; border-radius: 4px; transition: background 0.15s;
     }
-    .console-actions button:hover { color:var(--text-primary); background:var(--bg-elevated); }
+    .console-action:hover { background: var(--bg-raised); color: var(--text); }
 
     .console-body {
-      flex:1; overflow-y:auto; padding:0.75rem 1rem;
-      font-family: var(--font-mono); font-size:0.72rem; line-height:1.55;
+      flex: 1; overflow-y: auto; padding: 16px 24px;
+      font-family: var(--font-code); font-size: var(--font-size-base); line-height: 1.7;
     }
-    .console-body::-webkit-scrollbar { width:6px; }
-    .console-body::-webkit-scrollbar-track { background:transparent; }
-    .console-body::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+    .console-body::-webkit-scrollbar { width: 8px; }
+    .console-body::-webkit-scrollbar-track { background: transparent; }
+    .console-body::-webkit-scrollbar-thumb {
+      background: var(--border); border-radius: 4px;
+    }
 
     /* Log entries */
-    .log-entry { margin-bottom:0.15rem; display:flex; gap:0.5rem; }
-    .log-time { color:var(--text-muted); flex-shrink:0; font-size:0.65rem; min-width:5rem; }
-    .log-text { word-break:break-all; }
-    .log-entry.info .log-text { color:var(--text-secondary); }
-    .log-entry.system { margin:0.35rem 0; padding:0.25rem 0.5rem; background:var(--bg-surface); border-left:2px solid var(--accent); border-radius:0 4px 4px 0; }
-    .log-entry.system .log-text { color:var(--accent); }
-    .log-entry.success .log-text { color:var(--green); }
-    .log-entry.warn .log-text { color:var(--amber); }
-    .log-entry.error .log-text { color:var(--red); }
-    .log-entry.tool { margin:0.35rem 0; padding:0.3rem 0.6rem; background:var(--bg-elevated); border-left:2px solid var(--purple); border-radius:0 4px 4px 0; }
-    .log-entry.tool .log-text { color:var(--purple); }
-    .log-entry.retry { margin:0.35rem 0; padding:0.3rem 0.6rem; background:var(--amber-dim); border-left:2px solid var(--amber); border-radius:0 4px 4px 0; }
-    .log-entry.retry .log-text { color:var(--amber); }
+    .log-line { display: flex; gap: 12px; padding: 3px 0; }
+    .log-line:first-child { padding-top: 0; }
+    .log-time {
+      color: var(--text-muted); flex-shrink: 0; font-size: var(--font-size-sm);
+      min-width: 68px; user-select: none;
+    }
+    .log-content { word-break: break-word; flex: 1; }
+
+    .log-line.info .log-content { color: var(--text-secondary); }
+    .log-line.system {
+      margin: 6px 0; padding: 8px 12px;
+      background: var(--accent-light); border-left: 3px solid var(--accent);
+      border-radius: 0 6px 6px 0;
+    }
+    .log-line.system .log-content { color: var(--accent); font-weight: 500; }
+    .log-line.success .log-content { color: var(--green); }
+    .log-line.warn .log-content { color: var(--amber); }
+    .log-line.error .log-content { color: var(--red); }
+    .log-line.tool {
+      margin: 6px 0; padding: 8px 12px;
+      background: var(--purple-bg); border-left: 3px solid var(--purple);
+      border-radius: 0 6px 6px 0;
+    }
+    .log-line.tool .log-content { color: var(--purple); }
+    .log-line.retry {
+      margin: 6px 0; padding: 8px 12px;
+      background: var(--amber-bg); border-left: 3px solid var(--amber);
+      border-radius: 0 6px 6px 0;
+    }
+    .log-line.retry .log-content { color: var(--amber); font-weight: 500; }
+    .log-line.guard {
+      margin: 6px 0; padding: 8px 12px;
+      background: var(--red-bg); border-left: 3px solid var(--red);
+      border-radius: 0 6px 6px 0;
+    }
 
     /* Empty state */
-    .empty-state {
-      display:flex; flex-direction:column; align-items:center; justify-content:center;
-      height:100%; color:var(--text-muted); text-align:center; gap:0.75rem;
+    .empty-page {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      height: 100%; color: var(--text-muted); text-align: center; gap: 12px;
     }
-    .empty-state .icon { font-size:2.5rem; opacity:0.3; }
-    .empty-state .title { font-size:0.85rem; color:var(--text-secondary); }
-    .empty-state .hint { font-size:0.65rem; max-width:300px; line-height:1.5; }
+    .empty-page .cursor {
+      font-family: var(--font-code); font-size: var(--font-size-2xl); opacity: 0.25;
+      animation: blink 1s step-end infinite;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+    .empty-page .title {
+      font-size: var(--font-size-lg); font-weight: 600; color: var(--text-secondary);
+    }
+    .empty-page .desc {
+      font-size: var(--font-size-base); max-width: 380px; line-height: 1.6;
+    }
 
-    /* ===== RESPONSIVE ===== */
-    @media (max-width: 768px) {
-      .main { flex-direction:column; }
-      .sidebar { width:100%; max-height:50vh; overflow-y:auto; flex-shrink:1; }
+    @media (max-width: 860px) {
+      .main { flex-direction: column; }
+      .sidebar { width: 100%; max-height: 52vh; flex-shrink: 1; }
+      .header { flex-wrap: wrap; gap: 10px; }
     }
   </style>
 </head>
 <body>
   <div class="app">
-    <!-- ===== HEADER ===== -->
+    <!-- HEADER -->
     <header class="header">
       <div class="header-left">
-        <div class="logo">Rrrat<span>Coder</span></div>
-        <div class="agent-badge">
-          <span class="pulse" id="agent-pulse"></span>
-          <span id="agent-status">Agent Idle</span>
+        <div class="logo">Rrrat<span class="logo-accent">Coder</span></div>
+        <div class="agent-indicator">
+          <span class="indicator-dot off" id="agent-dot"></span>
+          <span id="agent-label">Agent Idle</span>
         </div>
       </div>
-      <div class="header-right">
-        <span class="stat">v1.0.0</span>
-        <span class="stat">56 tests</span>
-        <span class="stat">DeepSeek</span>
+      <div class="header-stats">
+        <span>v1.0.0</span>
+        <span>56 tests</span>
+        <span>DeepSeek</span>
       </div>
     </header>
 
-    <!-- ===== MAIN ===== -->
+    <!-- MAIN -->
     <div class="main">
       <!-- SIDEBAR -->
       <aside class="sidebar">
         <!-- Key Config -->
-        <div class="sidebar-section">
-          <div class="section-label">🔑 API Key</div>
+        <div class="sidebar-block">
+          <div class="block-title">API Key</div>
           <div class="key-status-row">
-            <span class="dot" id="key-dot"></span>
-            <span id="key-hint">检测中...</span>
+            <span class="dot dot-inactive" id="key-dot"></span>
+            <span id="key-hint">Detecting...</span>
           </div>
           <form id="key-form">
-            <div class="input-group">
-              <label>主密码</label>
-              <input type="password" id="key-password" placeholder="加密用密码" required autocomplete="off">
+            <div class="field">
+              <label class="field-label" for="key-password">Master Password</label>
+              <input type="password" id="key-password" placeholder="Encryption passphrase" required autocomplete="off">
             </div>
-            <div class="input-group">
-              <label>DeepSeek API Key</label>
+            <div class="field">
+              <label class="field-label" for="key-apikey">DeepSeek API Key</label>
               <input type="password" id="key-apikey" placeholder="sk-..." required autocomplete="off">
             </div>
-            <div class="btn-row">
-              <button type="submit" class="btn btn-primary">🔒 安全存储</button>
-              <button type="button" class="btn btn-danger" onclick="clearKey()">清除</button>
+            <div class="btn-group">
+              <button type="submit" class="btn btn-primary" style="flex:1;">Store Securely</button>
+              <button type="button" class="btn btn-danger" onclick="clearKey()">Clear</button>
             </div>
           </form>
-          <p class="input-hint">AES-256-GCM 加密 · <code>~/.rrratcoder/credentials.enc</code></p>
+          <p class="field-hint">AES-256-GCM encrypted storage at <code>~/.rrratcoder/credentials.enc</code></p>
         </div>
 
         <!-- Task Input -->
-        <div class="sidebar-section">
-          <div class="section-label">💻 任务指令</div>
+        <div class="sidebar-block">
+          <div class="block-title">Task</div>
           <form id="task-form">
-            <div class="input-group">
-              <label>描述你的编码任务</label>
-              <textarea id="task-input" placeholder="例：在 src/ 下创建 hello.ts，输出 Hello World&#10;例：修复 src/utils.ts 中的类型错误&#10;例：给 agent-loop 添加超时控制" required></textarea>
+            <div class="field">
+              <label class="field-label" for="task-input">Describe your coding task</label>
+              <textarea id="task-input" placeholder="e.g. Create src/hello.ts that prints Hello World&#10;e.g. Fix type errors in src/utils.ts&#10;e.g. Add timeout control to agent-loop" required></textarea>
             </div>
-            <div class="input-group">
-              <label>主密码（解密 Key）</label>
-              <input type="password" id="task-password" placeholder="输入主密码" required autocomplete="off">
+            <div class="field">
+              <label class="field-label" for="task-password">Master Password</label>
+              <input type="password" id="task-password" placeholder="To decrypt your API key" required autocomplete="off">
             </div>
-            <button type="submit" class="btn btn-accent" id="run-btn" disabled>▶ 执行任务</button>
+            <button type="submit" class="btn btn-success" id="run-btn" disabled>Run Task</button>
           </form>
         </div>
 
-        <!-- Quick modules -->
-        <div class="sidebar-section" style="padding-bottom:0.75rem;">
-          <div class="section-label">🧩 Harness 模块</div>
-          <div id="modules-tags" style="display:flex;flex-wrap:wrap;gap:0.35rem;">
-            <span style="font-size:0.65rem;color:var(--text-muted);">加载中...</span>
+        <!-- Modules -->
+        <div class="sidebar-block">
+          <div class="block-title">Harness Modules</div>
+          <div class="module-tags" id="modules-tags">
+            <span style="font-size:14px;color:var(--text-muted);">Loading...</span>
           </div>
-          <p style="font-size:0.65rem;color:var(--amber);margin-top:0.6rem;" id="mc-tag"></p>
+          <p class="main-contribution" id="mc-tag" style="margin-top:12px;"></p>
         </div>
       </aside>
 
       <!-- CONSOLE -->
       <section class="console-area">
-        <div class="console-header">
+        <div class="console-bar">
           <div class="console-tabs">
-            <span class="console-tab active">▸ OUTPUT</span>
-            <span class="console-tab" id="tab-log" style="color:var(--text-muted);">▸ SESSION LOG</span>
+            <span class="console-tab active">Output</span>
+            <span class="console-tab" style="color:var(--text-muted);">Session Log</span>
           </div>
-          <div class="console-actions">
-            <button onclick="clearConsole()" title="清空">🗑</button>
-          </div>
+          <button class="console-action" onclick="clearConsole()" title="Clear console">Clear</button>
         </div>
         <div class="console-body" id="console">
-          <div class="empty-state">
-            <div class="icon">▸_</div>
-            <div class="title">Agent 就绪，等待任务指令</div>
-            <div class="hint">
-              在左侧输入编码任务并配置 API Key 后点击「执行任务」。<br>
-              Agent 将自动读写文件、执行命令、运行校验并自我修正。
+          <div class="empty-page">
+            <div class="cursor">|</div>
+            <div class="title">Agent ready — awaiting task</div>
+            <div class="desc">
+              Configure your DeepSeek API Key in the sidebar, then enter a coding task.
+              The agent will read/write files, execute commands, run validation, and auto-correct.
             </div>
           </div>
         </div>
@@ -349,69 +378,62 @@
 
   <script>
     const $  = (id) => document.getElementById(id);
-    const $$ = (sel) => document.querySelector(sel);
 
     let keyConfigured = false;
     let emptyShown = true;
 
-    // ===== TIMESTAMP =====
     function ts() {
-      return new Date().toLocaleTimeString('zh-CN', { hour12: false });
+      return new Date().toLocaleTimeString('en-US', { hour12: false });
     }
 
-    // ===== LOGGING =====
-    function log(cls, msg, extra) {
+    function log(cls, msg, detail) {
       const c = $('console');
       if (emptyShown) { c.innerHTML = ''; emptyShown = false; }
       const div = document.createElement('div');
-      div.className = 'log-entry ' + cls;
-      div.innerHTML = `<span class="log-time">[${ts()}]</span><span class="log-text">${msg}</span>`;
-      if (extra) {
-        const ex = document.createElement('div');
-        ex.className = 'log-text';
-        ex.style.cssText = 'font-size:0.65rem;color:var(--text-muted);padding-left:5.5rem;';
-        ex.textContent = extra;
-        div.appendChild(ex);
+      div.className = 'log-line ' + cls;
+      let html = '<span class="log-time">[' + ts() + ']</span><span class="log-content">' + msg + '</span>';
+      if (detail) {
+        html += '<div style="font-size:12px;color:var(--text-muted);padding-left:80px;margin-top:2px;">' + detail + '</div>';
       }
+      div.innerHTML = html;
       c.appendChild(div);
       c.scrollTop = c.scrollHeight;
     }
 
     function clearConsole() {
-      $('console').innerHTML = `<div class="empty-state">
-        <div class="icon">▸_</div>
-        <div class="title">控制台已清空</div>
-      </div>`;
+      $('console').innerHTML = '<div class="empty-page">' +
+        '<div class="cursor">|</div>' +
+        '<div class="title">Console cleared</div>' +
+        '</div>';
       emptyShown = true;
     }
 
     function setAgentStatus(running) {
-      const dot = $('agent-pulse');
-      const txt = $('agent-status');
+      const dot = $('agent-dot');
+      const label = $('agent-label');
       if (running) {
-        dot.className = 'pulse';
-        txt.textContent = 'Agent Running';
-        txt.style.color = 'var(--green)';
+        dot.className = 'indicator-dot';
+        label.textContent = 'Agent Running';
+        label.style.color = 'var(--green)';
       } else {
-        dot.className = 'pulse off';
-        txt.textContent = 'Agent Idle';
-        txt.style.color = '';
+        dot.className = 'indicator-dot off';
+        label.textContent = 'Agent Idle';
+        label.style.color = '';
       }
     }
 
-    // ===== API =====
+    // ---- API ----
     async function refreshKeyStatus() {
       try {
         const r = await fetch('/api/key/status');
         const d = await r.json();
         keyConfigured = d.configured;
-        const dot = $('key-dot');
-        dot.className = d.configured ? 'dot dot-set' : 'dot dot-unset';
+        $('key-dot').className = d.configured ? 'dot dot-active' : 'dot dot-inactive';
         $('key-hint').textContent = d.hint;
+        $('key-hint').style.color = d.configured ? 'var(--green)' : '';
         $('run-btn').disabled = !d.configured;
-        $('agent-pulse').className = d.configured ? 'pulse' : 'pulse off';
       } catch(e) {
-        $('key-hint').textContent = '⚠ 无法连接服务器';
+        $('key-hint').textContent = 'Cannot connect to server';
       }
     }
 
@@ -419,118 +441,117 @@
       try {
         const r = await fetch('/api/info');
         const d = await r.json();
-        $('modules-tags').innerHTML = d.modules.map(m =>
-          `<span style="font-size:0.65rem;background:var(--bg-elevated);color:var(--accent);padding:0.15rem 0.5rem;border-radius:3px;border:1px solid var(--border);">${m}</span>`
-        ).join('');
-        $('mc-tag').textContent = '★ ' + d.mainContribution;
+        $('modules-tags').innerHTML = d.modules.map(function(m) {
+          return '<span class="module-tag">' + m + '</span>';
+        }).join('');
+        $('mc-tag').textContent = 'Main Contribution: ' + d.mainContribution;
       } catch(e) {}
     }
 
-    // ===== KEY FORM =====
-    $('key-form').addEventListener('submit', async (e) => {
+    // ---- Key Form ----
+    $('key-form').addEventListener('submit', async function(e) {
       e.preventDefault();
-      const password = $('key-password').value;
-      const apiKey = $('key-apikey').value.trim();
-      log('system', '🔐 正在安全存储 API Key...');
+      var password = $('key-password').value;
+      var apiKey  = $('key-apikey').value.trim();
+      log('system', 'Storing API key...');
       try {
-        const r = await fetch('/api/key/set', {
+        var r = await fetch('/api/key/set', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ password, apiKey }),
+          body: JSON.stringify({ password: password, apiKey: apiKey }),
         });
-        const d = await r.json();
+        var d = await r.json();
         if (d.ok) {
-          log('success', '✅ ' + d.message);
+          log('success', d.message);
           $('key-password').value = '';
           $('key-apikey').value = '';
           refreshKeyStatus();
         } else {
-          log('error', '❌ ' + d.error);
+          log('error', d.error);
         }
       } catch(err) {
-        log('error', '❌ 网络错误: ' + err.message);
+        log('error', 'Network error: ' + err.message);
       }
     });
 
     async function clearKey() {
-      if (!confirm('确认清除已存储的 API Key？')) return;
+      if (!confirm('Delete stored API key?')) return;
       try {
-        const r = await fetch('/api/key/clear', { method: 'POST' });
-        const d = await r.json();
-        log(d.ok ? 'success' : 'error', d.ok ? '✅ ' + d.message : '❌ ' + d.error);
+        var r = await fetch('/api/key/clear', { method: 'POST' });
+        var d = await r.json();
+        log(d.ok ? 'success' : 'error', d.ok ? d.message : d.error);
         refreshKeyStatus();
       } catch(err) {
-        log('error', '❌ ' + err.message);
+        log('error', err.message);
       }
     }
 
-    // ===== TASK FORM =====
-    $('task-form').addEventListener('submit', async (e) => {
+    // ---- Task Form ----
+    $('task-form').addEventListener('submit', async function(e) {
       e.preventDefault();
-      const task = $('task-input').value.trim();
-      const password = $('task-password').value;
+      var task     = $('task-input').value.trim();
+      var password = $('task-password').value;
       if (!task || !password) return;
 
-      const btn = $('run-btn');
+      var btn = $('run-btn');
       btn.disabled = true;
-      btn.textContent = '⟳ 执行中...';
+      btn.textContent = 'Running...';
       setAgentStatus(true);
 
-      log('system', '🚀 任务开始');
-      log('info', '📋 ' + task);
+      log('system', 'Task started');
+      log('info', task);
 
       try {
-        const r = await fetch('/api/run', {
+        var r = await fetch('/api/run', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ task, password }),
+          body: JSON.stringify({ task: task, password: password }),
         });
-        const d = await r.json();
+        var d = await r.json();
         if (d.ok) {
-          const { status, rounds, summary, sessionLog } = d.result;
-          log('system', '── 执行结果 ──');
-          log(status === 'success' ? 'success' : 'warn',
-            `📊 状态: ${status}  |  轮次: ${rounds}`);
-          log('info', '📝 ' + (summary || '(无输出)'));
+          var result = d.result;
+          log('system', '--- Result ---');
+          log(result.status === 'success' ? 'success' : 'warn',
+              'Status: ' + result.status + '  |  Rounds: ' + result.rounds);
+          log('info', (result.summary || '(no output)'));
 
-          if (sessionLog && sessionLog.length) {
-            log('system', '── 会话详情 ──');
-            sessionLog.forEach((rec, i) => {
+          if (result.sessionLog && result.sessionLog.length) {
+            log('system', '--- Session Details ---');
+            result.sessionLog.forEach(function(rec) {
               if (rec.toolCall) {
-                const args = rec.toolCall.function.arguments || '';
-                const shortArgs = args.length > 60 ? args.slice(0,60)+'...' : args;
-                log('tool', `🔧 [R${rec.round}] ${rec.toolCall.function.name}`,
-                  shortArgs);
+                var args = rec.toolCall.function.arguments || '';
+                var short = args.length > 80 ? args.slice(0,80) + '...' : args;
+                log('tool', '[R' + rec.round + '] ' + rec.toolCall.function.name, short);
               }
               if (rec.guardResult && !rec.guardResult.allowed) {
-                log('warn', `🛡️ [R${rec.round}] 护栏拦截: ${rec.guardResult.reason} (风险: ${rec.guardResult.risk})`);
+                log('guard', '[R' + rec.round + '] Blocked: ' + rec.guardResult.reason + ' (risk: ' + rec.guardResult.risk + ')');
               }
               if (rec.feedbackResult && !rec.feedbackResult.passed) {
-                const fails = rec.feedbackResult.results
-                  ?.filter(r=>!r.passed).map(r=>r.name).join(', ') || '';
-                log('retry', `🔄 [R${rec.round}] 校验失败 → 自动重试`,
-                  fails ? `失败项: ${fails}` : '');
+                var fails = rec.feedbackResult.results
+                  ? rec.feedbackResult.results.filter(function(r){return !r.passed;}).map(function(r){return r.name;}).join(', ')
+                  : '';
+                log('retry', '[R' + rec.round + '] Validation failed - retrying', fails || '');
               }
               if (rec.toolResult && !rec.toolResult.success) {
-                log('error', `❌ [R${rec.round}] 工具失败: ${rec.toolResult.error || ''}`);
+                log('error', '[R' + rec.round + '] Tool error: ' + (rec.toolResult.error || ''));
               }
             });
           }
-          log('system', '── ' + (status === 'success' ? '✅' : '⚠️') + ' 任务结束 ──');
+          log('system', '--- Task ' + (result.status === 'success' ? 'complete' : 'ended') + ' ---');
         } else {
-          log('error', '❌ ' + d.error);
+          log('error', d.error);
         }
       } catch(err) {
-        log('error', '❌ 网络错误: ' + err.message);
+        log('error', 'Network error: ' + err.message);
       }
 
       btn.disabled = false;
-      btn.textContent = '▶ 执行任务';
+      btn.textContent = 'Run Task';
       setAgentStatus(false);
       $('task-password').value = '';
     });
 
-    // ===== INIT =====
+    // ---- Init ----
     refreshKeyStatus();
     loadInfo();
   </script>
