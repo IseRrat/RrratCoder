@@ -158,6 +158,23 @@
     <div class="key-hint">Key stored at <code>~/.rrratcoder/api-key</code></div>
   </div>
 
+  <!-- WORKSPACE -->
+  <div class="key-section" id="ws-section" style="border-color:var(--pu)">
+    <div class="key-head">
+      <span class="key-title" style="color:var(--pu)">Work Directory</span>
+      <span class="key-status" id="ws-status" style="background:var(--am-bg);color:var(--am);border:1px solid">Checking...</span>
+    </div>
+    <div class="key-fields">
+      <div class="field">
+        <label>Path (relative or absolute)</label>
+        <input type="text" id="ws-path" placeholder="./workspace" autocomplete="off" style="font-family:var(--code);font-size:13px">
+      </div>
+      <button class="btn" style="background:var(--pu);color:#fff" id="btn-ws-set" onclick="setWorkspace()">Set</button>
+      <button class="btn btn-outline" id="btn-ws-create" onclick="createWorkspace()" style="display:none">Create Dir</button>
+    </div>
+    <div class="key-hint" id="ws-hint">All generated files will be placed here — not in the project folder.</div>
+  </div>
+
   <!-- PROMPT -->
   <div class="prompt-box">
     <textarea id="prompt" placeholder="Describe the coding task...
@@ -247,6 +264,40 @@ async function saveKey(){
 async function clearKey(){
   if(!confirm('Delete stored API key?'))return;
   try{await fetch('/api/key/clear',{method:'POST'});keyReady=false;updateKeyUI()}catch(e){}
+}
+
+// ==== WORKSPACE ====
+async function checkWorkspace(){
+  try{
+    var r=await fetch('/api/workspace');var d=await r.json();
+    document.getElementById('ws-path').value=d.path;
+    var st=document.getElementById('ws-status');
+    var btnC=document.getElementById('btn-ws-create');
+    if(d.exists){
+      st.textContent='Ready';st.style.background='var(--gn)';st.style.color='#fff';st.style.border='none';
+      btnC.style.display='none';
+    }else{
+      st.textContent='Not created';st.style.background='var(--am-bg)';st.style.color='var(--am)';st.style.border='1px solid';
+      btnC.style.display='';
+    }
+    document.getElementById('ws-hint').textContent='All generated files go here: '+d.path;
+  }catch(e){console.error('Workspace check failed:',e)}
+}
+async function setWorkspace(){
+  var p=document.getElementById('ws-path').value.trim();if(!p)return;
+  var btn=document.getElementById('btn-ws-set');btn.disabled=true;btn.textContent='...';
+  try{
+    var r=await fetch('/api/workspace',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({path:p})});
+    var d=await r.json();
+    if(d.ok){document.getElementById('ws-path').value=d.path;checkWorkspace()}else{alert(d.error)}
+  }catch(e){alert('Error: '+e.message)}
+  btn.disabled=false;btn.textContent='Set'
+}
+async function createWorkspace(){
+  try{
+    var r=await fetch('/api/workspace/create',{method:'POST'});var d=await r.json();
+    if(d.ok)checkWorkspace();else alert(d.error)
+  }catch(e){alert('Error: '+e.message)}
 }
 
 // ==== RUN ====
@@ -386,7 +437,7 @@ function loadInfo(){
 }
 
 // ==== INIT ====
-checkKey();loadInfo();
+checkKey();checkWorkspace();loadInfo();
 </script>
 </body>
 </html>

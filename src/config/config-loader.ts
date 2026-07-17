@@ -12,7 +12,7 @@ const DEFAULT_CONFIG: HarnessConfig = {
   agent: {
     maxRounds: 10,
     maxRetries: 3,
-    workspaceRoot: './',
+    workspaceRoot: './workspace',
     allowedPaths: [],
   },
   guardrails: {
