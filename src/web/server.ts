@@ -1,5 +1,5 @@
 import express from 'express';
-import { join } from 'path';
+import { join, resolve as pathResolve } from 'path';
 import { fileURLToPath } from 'url';
 import { existsSync } from 'fs';
 import { homedir } from 'os';
@@ -76,8 +76,9 @@ app.post('/api/run', async (req, res) => {
     const apiKey = cm.retrieve();
 
     const config = loadConfig('.harness/config.json');
+    const workspaceRoot = pathResolve(config.agent.workspaceRoot);
     const ctx: ToolContext = {
-      workspaceRoot: config.agent.workspaceRoot,
+      workspaceRoot,
       allowedPaths: config.agent.allowedPaths,
     };
 
@@ -86,7 +87,23 @@ app.post('/api/run', async (req, res) => {
     const loop = new AgentLoop(llm, tools, config);
 
     const result = await loop.run(task);
-    res.json({ ok: true, result });
+
+    // 提取产出文件清单
+    const filesCreated: string[] = [];
+    const seen = new Set<string>();
+    (result.sessionLog || []).forEach(rec => {
+      if (rec.toolCall?.function?.name === 'write_file') {
+        try {
+          const args = JSON.parse(rec.toolCall.function.arguments);
+          if (args.path && !seen.has(args.path)) {
+            seen.add(args.path);
+            filesCreated.push(args.path);
+          }
+        } catch {}
+      }
+    });
+
+    res.json({ ok: true, result: { ...result, workspaceRoot, filesCreated } });
   } catch (err: any) {
     res.status(500).json({ error: `执行失败: ${err.message}` });
   }

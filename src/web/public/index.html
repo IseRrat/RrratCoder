@@ -95,6 +95,18 @@
     .result-summary.er{background:var(--rd-bg);color:var(--rd)}
     .result-summary .st{font-family:var(--code);font-size:13px}
 
+    /* Workspace + Files Created */
+    .ws-bar{font-size:12px;color:var(--ts);padding:4px 0;font-family:var(--code)}
+    .files-box{border:2px solid var(--gn);border-radius:var(--r);padding:0;margin:4px 0 12px;overflow:hidden;background:var(--gn-bg)}
+    .files-hdr{font-size:16px;font-weight:700;color:var(--gn);padding:12px 16px 10px;border-bottom:1px solid #c6e6c6}
+    .file-row{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;border-bottom:1px solid #c6e6c6;font-family:var(--code);font-size:13px}
+    .file-row:last-child{border-bottom:none}
+    .file-row .fp{font-weight:600;color:var(--t);flex:1;overflow:hidden;text-overflow:ellipsis}
+    .file-row .abs{font-size:11px;color:var(--tf);margin-left:8px}
+    .file-row button{border:1px solid var(--b);border-radius:3px;padding:2px 8px;font-size:11px;font-family:var(--ui);cursor:pointer;background:var(--bg);color:var(--ts);margin-left:4px;transition:all .12s}
+    .file-row button:hover{border-color:var(--gn);color:var(--gn)}
+    .file-row button.copied{background:var(--gn);color:#fff;border-color:var(--gn)}
+
     /* Empty */
     .empty-state{text-align:center;padding:50px 20px;color:var(--tf)}
     .empty-state .t1{font-size:18px;font-weight:600;margin-bottom:8px;color:var(--ts)}
@@ -284,12 +296,43 @@ function renderResult(task,result){
   // User msg
   var u=document.createElement('div');u.className='msg-user';u.textContent=task;frag.appendChild(u);
 
+  // === WORKSPACE ===
+  if(result.workspaceRoot){
+    var ws=document.createElement('div');ws.className='ws-bar';
+    ws.textContent='Workspace: '+result.workspaceRoot;
+    frag.appendChild(ws)
+  }
+
+  // === FILES CREATED (most prominent!) ===
+  var files=result.filesCreated||[];
+  if(files.length>0){
+    var box=document.createElement('div');box.className='files-box';
+    var hdr=document.createElement('div');hdr.className='files-hdr';
+    hdr.textContent='Files Created ('+files.length+')';
+    box.appendChild(hdr);
+    var root=result.workspaceRoot||'';
+    files.forEach(function(f){
+      var row=document.createElement('div');row.className='file-row';
+      var absPath=root?root.replace(/\\+$/,'')+'/'+f:'/'+f;
+      row.innerHTML='<span class="fp">'+esc(f)+'</span><span class="abs">'+esc(absPath)+'</span><button onclick="copyPath(this,\''+esc(absPath)+'\')">Copy path</button>';
+      box.appendChild(row)
+    });
+    frag.appendChild(box)
+  }
+
+  // === DETAIL: conversation + code blocks ===
+  var detail=document.createElement('details');detail.style.marginTop='6px';
+  var ds=document.createElement('summary');ds.style.cssText='font-size:13px;font-weight:600;color:var(--ts);cursor:pointer;padding:4px 0';
+  ds.textContent='Execution Detail ('+(result.sessionLog||[]).length+' rounds)';
+  detail.appendChild(ds);
+  var dd=document.createElement('div');dd.style.marginTop='6px';
+
   var log=result.sessionLog||[];
   log.forEach(function(rec){
     // LLM text
     if(rec.llmResponse&&rec.llmResponse.message&&rec.llmResponse.message.content){
       var t=rec.llmResponse.message.content.trim();if(!t)return;
-      var m=document.createElement('div');m.className='msg-agent';m.textContent=t;frag.appendChild(m)
+      var m=document.createElement('div');m.className='msg-agent';m.textContent=t;dd.appendChild(m)
     }
     if(!rec.toolCall)return;
     var tc=rec.toolCall,nm=tc.function.name,args={};try{args=JSON.parse(tc.function.arguments)}catch(e){}
@@ -297,47 +340,52 @@ function renderResult(task,result){
     if(nm==='write_file'&&args.path&&args.content){
       var ext=(args.path||'').split('.').pop(),lang=ext==='ts'?'TypeScript':ext==='js'?'JavaScript':ext==='json'?'JSON':ext==='html'?'HTML':ext==='css'?'CSS':ext||'';
       var cb=document.createElement('div');cb.className='code-block';
-      cb.innerHTML='<div class="code-block-header"><span class="fp">'+esc(args.path)+'</span><span class="fl">'+lang+'</span></div><div class="code-block-body">'+esc(args.content)+'</div>';
-      frag.appendChild(cb)
+      cb.innerHTML='<div class="code-block-header"><span class="fp">'+esc(args.path)+'</span><span class="fl">'+lang+'</span><button style="margin-left:8px;border:1px solid var(--b);border-radius:3px;padding:1px 7px;font-size:10px;font-family:var(--ui);cursor:pointer;background:transparent;color:var(--ts)" onclick="copyCode(this,'+JSON.stringify(args.content)+')">Copy</button></div><div class="code-block-body">'+esc(args.content)+'</div>';
+      dd.appendChild(cb)
     }else if(nm==='shell'&&args.command){
       var cb=document.createElement('div');cb.className='code-block';
       cb.innerHTML='<div class="code-block-header"><span class="fp">$ '+esc(args.command)+'</span></div>';
-      frag.appendChild(cb);
+      dd.appendChild(cb);
       if(rec.toolResult&&rec.toolResult.output){
         var co=document.createElement('div');co.className='code-block';co.style.marginTop='2px';
-        co.innerHTML='<div class="code-block-body">'+esc(rec.toolResult.output)+'</div>';frag.appendChild(co)
+        co.innerHTML='<div class="code-block-body">'+esc(rec.toolResult.output)+'</div>';dd.appendChild(co)
       }
     }else if(nm==='read_file'&&rec.toolResult&&rec.toolResult.output){
       var cb=document.createElement('div');cb.className='code-block';
       cb.innerHTML='<div class="code-block-header"><span class="fp">'+(args.path?esc(args.path):'read_file')+'</span></div><div class="code-block-body">'+esc(rec.toolResult.output)+'</div>';
-      frag.appendChild(cb)
+      dd.appendChild(cb)
     }else{
       var s=document.createElement('div');s.className='stat-inline tool';
-      s.textContent=nm+(args.path?' '+args.path:'');frag.appendChild(s)
+      s.textContent=nm+(args.path?' '+args.path:'');dd.appendChild(s)
     }
 
     if(rec.toolResult&&!rec.toolResult.success&&rec.toolResult.error){
-      var e=document.createElement('div');e.className='stat-inline err';e.textContent='Tool error: '+rec.toolResult.error;frag.appendChild(e)
+      var e=document.createElement('div');e.className='stat-inline err';e.textContent='Tool error: '+rec.toolResult.error;dd.appendChild(e)
     }
     if(rec.guardResult&&!rec.guardResult.allowed){
-      var g=document.createElement('div');g.className='stat-inline err';g.textContent='Blocked: '+(rec.guardResult.reason||'')+' (Risk: '+(rec.guardResult.risk||'')+')';frag.appendChild(g)
+      var g=document.createElement('div');g.className='stat-inline err';g.textContent='Blocked: '+(rec.guardResult.reason||'')+' (Risk: '+(rec.guardResult.risk||'')+')';dd.appendChild(g)
     }
     if(rec.feedbackResult){
       var fb=rec.feedbackResult;var v=document.createElement('div');v.className='stat-inline '+(fb.passed?'ok':'warn');
       var txt=fb.passed?'Validation passed':'Validation failed - retrying';
       if(fb.errors&&fb.errors.length)txt+='\n'+fb.errors.map(function(e){return e.category+': '+e.message}).join('\n');
-      v.textContent=txt;v.style.whiteSpace='pre-line';frag.appendChild(v)
+      v.textContent=txt;v.style.whiteSpace='pre-line';dd.appendChild(v)
     }
   });
+  detail.appendChild(dd);frag.appendChild(detail);
 
-  // Summary
+  // === SUMMARY ===
   var ok=result.status==='success';
-  var sm=document.createElement('div');sm.className='result-summary '+(ok?'ok':'er');
+  var sm=document.createElement('div');sm.className='result-summary '+(ok?'ok':'er');sm.style.marginTop='12px';
   sm.innerHTML=(ok?'Task completed':'Task ended')+'<span class="st">&nbsp;Status: '+result.status+' | Rounds: '+result.rounds+'</span><br><span style="font-size:13px;font-weight:400">'+esc(result.summary||'')+'</span>';
   frag.appendChild(sm);
 
-  document.getElementById('results').appendChild(frag)
+  document.getElementById('results').appendChild(frag);
+  document.getElementById('results').scrollIntoView({behavior:'smooth',block:'start'})
 }
+
+function copyCode(btn,code){navigator.clipboard.writeText(code);btn.textContent='Copied!';setTimeout(function(){btn.textContent='Copy'},1500)}
+function copyPath(btn,path){navigator.clipboard.writeText(path);btn.textContent='Copied!';btn.classList.add('copied');setTimeout(function(){btn.textContent='Copy path';btn.classList.remove('copied')},1500)}
 
 function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 function loadInfo(){
