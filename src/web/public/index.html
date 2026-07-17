@@ -149,17 +149,13 @@
     </div>
     <div class="key-fields">
       <div class="field">
-        <label>Master password (set a passphrase)</label>
-        <input type="password" id="key-pw" placeholder="e.g. mypass123" autocomplete="off">
-      </div>
-      <div class="field">
         <label>API Key (sk-...)</label>
         <input type="password" id="key-api" placeholder="sk-..." autocomplete="off">
       </div>
       <button class="btn btn-blue" id="btn-save-key" onclick="saveKey()">Save Key</button>
       <button class="btn btn-outline" id="btn-clear-key" onclick="clearKey()">Clear</button>
     </div>
-    <div class="key-hint">Key is encrypted with AES-256-GCM and stored at <code>~/.rrratcoder/credentials.enc</code>. You will need the Master password each time you run a task.</div>
+    <div class="key-hint">Key stored at <code>~/.rrratcoder/api-key</code></div>
   </div>
 
   <!-- PROMPT -->
@@ -170,10 +166,6 @@ e.g. Create a file hello.ts with a TypeScript greet function
 e.g. Write a todo REST API in Express
 e.g. Find and fix all type errors in the project" rows="3"></textarea>
     <div class="prompt-footer">
-      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-        <input type="password" id="task-pw" placeholder="Master password" autocomplete="off">
-        <span class="hint-msg" id="hint-pw">Enter master password</span>
-      </div>
       <button class="btn-run" id="btn-run" disabled onclick="runTask()">Generate</button>
     </div>
   </div>
@@ -182,7 +174,7 @@ e.g. Find and fix all type errors in the project" rows="3"></textarea>
   <div class="results" id="results">
     <div class="empty-state">
       <div class="t1">AI Coding Agent</div>
-      <div class="t2">Set your DeepSeek API Key above, type a coding task, enter your master password, and click Generate. The agent will create files, run validation, and auto-correct.</div>
+      <div class="t2">Set your DeepSeek API Key above, type a coding task, and click Generate. The agent will create files, run validation, and auto-correct.</div>
     </div>
   </div>
 
@@ -196,9 +188,9 @@ e.g. Find and fix all type errors in the project" rows="3"></textarea>
   <div class="ep"><span class="method get">GET</span><div class="path">/api/health</div><div class="curl">curl localhost:3000/api/health</div></div>
   <div class="ep"><span class="method get">GET</span><div class="path">/api/info</div><div class="curl">curl localhost:3000/api/info</div></div>
   <div class="ep"><span class="method get">GET</span><div class="path">/api/key/status</div><div class="curl">curl localhost:3000/api/key/status</div></div>
-  <div class="ep"><span class="method post">POST</span><div class="path">/api/key/set</div><div class="curl">curl -X POST localhost:3000/api/key/set -H 'Content-Type: application/json' -d '{"password":"p","apiKey":"sk-"}'</div></div>
+  <div class="ep"><span class="method post">POST</span><div class="path">/api/key/set</div><div class="curl">curl -X POST localhost:3000/api/key/set -H 'Content-Type: application/json' -d '{"apiKey":"sk-"}'</div></div>
   <div class="ep"><span class="method post">POST</span><div class="path">/api/key/clear</div><div class="curl">curl -X POST localhost:3000/api/key/clear</div></div>
-  <div class="ep" style="border-color:var(--pu)"><span class="method post">POST</span><div class="path">/api/run</div><div class="curl">curl -X POST localhost:3000/api/run -H 'Content-Type: application/json' -d '{"task":"...","password":"p"}'</div></div>
+  <div class="ep" style="border-color:var(--pu)"><span class="method post">POST</span><div class="path">/api/run</div><div class="curl">curl -X POST localhost:3000/api/run -H 'Content-Type: application/json' -d '{"task":"..."}'</div></div>
   <h3>Agent Tools</h3>
   <div><span class="tool-tag">read_file</span><span class="tool-tag">write_file</span><span class="tool-tag">shell</span><span class="tool-tag">grep</span></div>
   <h3>Modules</h3>
@@ -241,14 +233,13 @@ function updateKeyUI(){
 }
 
 async function saveKey(){
-  var pw=document.getElementById('key-pw').value,key=document.getElementById('key-api').value.trim();
-  if(!pw){alert('Please enter a master password');return}
+  var key=document.getElementById('key-api').value.trim();
   if(!key){alert('Please enter your DeepSeek API Key (starts with sk-)');return}
   var btn=document.getElementById('btn-save-key');btn.disabled=true;btn.textContent='Saving...';
   try{
-    var r=await fetch('/api/key/set',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pw,apiKey:key})});
+    var r=await fetch('/api/key/set',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({apiKey:key})});
     var d=await r.json();
-    if(d.ok){keyReady=true;updateKeyUI();document.getElementById('key-pw').value='';document.getElementById('key-api').value=''}else{alert(d.error)}
+    if(d.ok){keyReady=true;updateKeyUI();document.getElementById('key-api').value=''}else{alert(d.error)}
   }catch(e){alert('Error: '+e.message)}
   btn.disabled=false;btn.textContent='Save Key'
 }
@@ -261,12 +252,8 @@ async function clearKey(){
 // ==== RUN ====
 async function runTask(){
   var task=document.getElementById('prompt').value.trim();
-  var pw=document.getElementById('task-pw').value;
-  var hint=document.getElementById('hint-pw');
 
-  if(!task){hint.textContent='Enter a task description';hint.style.display='inline';return}
-  if(!pw){hint.textContent='Enter master password';hint.style.display='inline';return}
-  hint.style.display='none';
+  if(!task){alert('Enter a task description');return}
   if(!keyReady){alert('Please configure your API Key first');return}
 
   var btn=document.getElementById('btn-run');btn.disabled=true;btn.textContent='Running...';
@@ -279,13 +266,13 @@ async function runTask(){
   document.getElementById('prompt').value='';
 
   try{
-    var r=await fetch('/api/run',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({task:task,password:pw})});
+    var r=await fetch('/api/run',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({task:task})});
     var d=await r.json();
     var ld=document.getElementById('loader');if(ld)ld.remove();
     if(d.ok)renderResult(task,d.result);else showError(d.error);
   }catch(e){var ld=document.getElementById('loader');if(ld)ld.remove();showError('Network error: '+e.message)}
 
-  btn.disabled=!keyReady;btn.textContent='Generate';document.getElementById('task-pw').value=''
+  btn.disabled=!keyReady;btn.textContent='Generate'
 }
 
 function showError(msg){

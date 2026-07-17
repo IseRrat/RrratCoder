@@ -1,7 +1,6 @@
 import express from 'express';
 import { join, resolve as pathResolve } from 'path';
 import { fileURLToPath } from 'url';
-import { existsSync } from 'fs';
 import { homedir } from 'os';
 import { CredentialManager } from '../credentials/credential-manager';
 import { loadConfig } from '../config/config-loader';
@@ -23,19 +22,19 @@ app.use(express.static(join(__dirname, 'public')));
 const CRED_PATH = join(homedir(), '.rrratcoder', 'credentials.enc');
 
 app.get('/api/key/status', (_req, res) => {
-  const configured = existsSync(CRED_PATH);
+  const cm = new CredentialManager(CRED_PATH);
+  const configured = cm.hasPlain();
   res.json({
     configured,
-    status: configured ? '🟢 已配置' : '⚪ 未配置',
-    hint: configured ? 'API Key 已安全存储，可直接执行任务' : '请先设置 DeepSeek API Key',
-    path: CRED_PATH,
+    status: configured ? '已配置' : '未配置',
+    hint: configured ? 'API Key 已存储，可直接执行任务' : '请先设置 DeepSeek API Key',
   });
 });
 
 app.post('/api/key/set', (req, res) => {
-  const { password, apiKey } = req.body;
-  if (!password || !apiKey) {
-    res.status(400).json({ error: '请提供 password（主密码）和 apiKey（DeepSeek API Key）' });
+  const { apiKey } = req.body;
+  if (!apiKey) {
+    res.status(400).json({ error: '请提供 apiKey（DeepSeek API Key）' });
     return;
   }
   if (!apiKey.startsWith('sk-')) {
@@ -44,9 +43,8 @@ app.post('/api/key/set', (req, res) => {
   }
   try {
     const cm = new CredentialManager(CRED_PATH);
-    cm.init(password);
-    cm.store(apiKey);
-    res.json({ ok: true, message: 'API Key 已安全存储 (AES-256-GCM 加密)' });
+    cm.storePlain(apiKey);
+    res.json({ ok: true, message: 'API Key 已存储' });
   } catch (err: any) {
     res.status(500).json({ error: `存储失败: ${err.message}` });
   }
@@ -55,7 +53,7 @@ app.post('/api/key/set', (req, res) => {
 app.post('/api/key/clear', (_req, res) => {
   try {
     const cm = new CredentialManager(CRED_PATH);
-    cm.clear();
+    cm.clearPlain();
     res.json({ ok: true, message: '凭据已清除' });
   } catch (err: any) {
     res.status(500).json({ error: `清除失败: ${err.message}` });
@@ -64,16 +62,15 @@ app.post('/api/key/clear', (_req, res) => {
 
 // ===== Task Execution =====
 app.post('/api/run', async (req, res) => {
-  const { task, password } = req.body;
-  if (!task || !password) {
-    res.status(400).json({ error: '请提供 task（任务描述）和 password（主密码）' });
+  const { task } = req.body;
+  if (!task) {
+    res.status(400).json({ error: '请提供 task（任务描述）' });
     return;
   }
 
   try {
     const cm = new CredentialManager(CRED_PATH);
-    cm.init(password);
-    const apiKey = cm.retrieve();
+    const apiKey = cm.retrievePlain();
 
     const config = loadConfig('.harness/config.json');
     const workspaceRoot = pathResolve(config.agent.workspaceRoot);
@@ -115,7 +112,8 @@ app.get('/api/health', (_req, res) => {
 });
 
 app.get('/api/info', (_req, res) => {
-  const configured = existsSync(CRED_PATH);
+  const cm = new CredentialManager(CRED_PATH);
+  const configured = cm.hasPlain();
   res.json({
     name: 'RrratCoder',
     version: '1.0.0',

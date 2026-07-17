@@ -57,4 +57,35 @@ export class CredentialManager {
     }
     this.masterKey = null;
   }
+
+  // ==== 无密码模式（明文存储，简单 UX） ====
+  private plainPath(): string {
+    return join(dirname(this.filePath), 'api-key');
+  }
+
+  /** 无密码存储 */
+  storePlain(apiKey: string): void {
+    const path = this.plainPath();
+    const dir = dirname(path);
+    if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+    writeFileSync(path, apiKey.trim(), 'utf-8');
+  }
+
+  /** 无密码读取 */
+  retrievePlain(): string {
+    const path = this.plainPath();
+    if (!existsSync(path)) throw new Error('没有找到存储的凭据');
+    return readFileSync(path, 'utf-8').trim();
+  }
+
+  /** 检查无密码凭据是否存在 */
+  hasPlain(): boolean {
+    return existsSync(this.plainPath());
+  }
+
+  /** 清除无密码凭据 */
+  clearPlain(): void {
+    const path = this.plainPath();
+    if (existsSync(path)) unlinkSync(path);
+  }
 }
