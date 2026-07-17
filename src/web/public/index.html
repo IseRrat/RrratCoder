@@ -3,78 +3,536 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RrratCoder Dashboard</title>
+  <title>RrratCoder · Agent Command Center</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f2f5; color: #333; min-height: 100vh; }
-    header { background: #1a1a2e; color: white; padding: 1.5rem 2rem; }
-    header h1 { font-size: 1.5rem; }
-    header p { opacity: 0.7; margin-top: 0.25rem; font-size: 0.9rem; }
-    main { max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
-    .card { background: white; padding: 1.5rem; margin-bottom: 1rem; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
-    .card h2 { font-size: 1.1rem; margin-bottom: 1rem; color: #1a1a2e; border-bottom: 2px solid #e0e0e0; padding-bottom: 0.5rem; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
-    .stat { text-align: center; padding: 1rem; background: #f8f9fa; border-radius: 6px; }
-    .stat .value { font-size: 2rem; font-weight: 700; color: #1a1a2e; }
-    .stat .label { font-size: 0.8rem; color: #888; margin-top: 0.25rem; }
-    .module-list { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-    .module-tag { background: #e8f4fd; color: #1a73e8; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8rem; }
-    .highlight { background: #fff3e0; color: #e65100; font-weight: 600; }
-    footer { text-align: center; padding: 1rem; font-size: 0.8rem; color: #999; }
+    :root {
+      --bg-root: #06090f;
+      --bg-surface: #0d1117;
+      --bg-elevated: #161b22;
+      --bg-input: #0d1117;
+      --border: #21262d;
+      --border-active: #30363d;
+      --text-primary: #e6edf3;
+      --text-secondary: #8b949e;
+      --text-muted: #484f58;
+      --accent: #58a6ff;
+      --accent-glow: rgba(88,166,255,0.3);
+      --green: #3fb950;
+      --green-dim: #1a4d1a;
+      --amber: #d29922;
+      --amber-dim: #4d3a1a;
+      --red: #f85149;
+      --red-dim: #4d1a1a;
+      --purple: #bc8cff;
+      --font-mono: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', Consolas, monospace;
+      --font-display: 'Rajdhani', system-ui, sans-serif;
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+
+    body {
+      font-family: var(--font-mono);
+      background: var(--bg-root);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Background grid effect */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(48,54,61,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(48,54,61,0.03) 1px, transparent 1px);
+      background-size: 32px 32px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Scanline overlay */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.015) 2px,
+        rgba(0,0,0,0.015) 4px
+      );
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ===== LAYOUT ===== */
+    .app { position:relative; z-index:1; display:flex; flex-direction:column; height:100vh; }
+
+    /* ---- Header ---- */
+    .header {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:0.75rem 1.25rem;
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border);
+      flex-shrink:0;
+    }
+    .header-left { display:flex; align-items:center; gap:0.75rem; }
+    .logo {
+      font-family: var(--font-display);
+      font-size:1.25rem; font-weight:700; color: var(--text-primary);
+      letter-spacing: 0.04em;
+    }
+    .logo span { color: var(--accent); }
+    .agent-badge {
+      display:flex; align-items:center; gap:0.4rem;
+      font-size:0.7rem; color: var(--text-secondary);
+      background: var(--bg-elevated); padding:0.2rem 0.6rem; border-radius:4px;
+      border: 1px solid var(--border);
+    }
+    .pulse {
+      width:8px; height:8px; border-radius:50%; background: var(--green);
+      box-shadow: 0 0 6px var(--green);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    .pulse.off { background: var(--text-muted); box-shadow: none; animation: none; }
+    @keyframes pulse {
+      0%, 100% { opacity:1; }
+      50% { opacity:0.4; }
+    }
+    .header-right { display:flex; align-items:center; gap:0.5rem; font-size:0.7rem; color: var(--text-muted); }
+    .header-right .stat { padding:0.15rem 0.5rem; background:var(--bg-elevated); border-radius:3px; border:1px solid var(--border); }
+
+    /* ---- Main ---- */
+    .main { display:flex; flex:1; overflow:hidden; }
+
+    /* ---- Sidebar ---- */
+    .sidebar {
+      width:380px; flex-shrink:0;
+      display:flex; flex-direction:column;
+      border-right:1px solid var(--border);
+      background: var(--bg-surface);
+      overflow-y:auto;
+    }
+    .sidebar-section {
+      padding:1rem 1.25rem;
+      border-bottom:1px solid var(--border);
+    }
+    .sidebar-section:last-child { border-bottom:none; }
+    .section-label {
+      font-size:0.65rem; font-weight:600; color: var(--text-muted);
+      text-transform:uppercase; letter-spacing:0.1em; margin-bottom:0.75rem;
+      font-family: var(--font-mono);
+    }
+    .key-status-row {
+      display:flex; align-items:center; gap:0.5rem; margin-bottom:0.75rem;
+      font-size:0.75rem;
+    }
+    .key-status-row .dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+    .dot-set { background:var(--green); box-shadow:0 0 6px var(--green); }
+    .dot-unset { background:var(--text-muted); }
+
+    /* Inputs */
+    .input-group { margin-bottom:0.6rem; }
+    .input-group:last-child { margin-bottom:0; }
+    .input-group label {
+      display:block; font-size:0.65rem; color: var(--text-secondary);
+      margin-bottom:0.3rem; text-transform:uppercase; letter-spacing:0.05em;
+    }
+    input, textarea {
+      width:100%; padding:0.5rem 0.65rem;
+      background: var(--bg-input); border:1px solid var(--border);
+      color: var(--text-primary); font-family: var(--font-mono); font-size:0.75rem;
+      border-radius:4px; outline:none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    input:focus, textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px var(--accent-glow);
+    }
+    input::placeholder, textarea::placeholder { color: var(--text-muted); }
+    textarea { resize:none; min-height:44px; }
+    .input-hint {
+      font-size:0.6rem; color: var(--text-muted); margin-top:0.25rem;
+      line-height:1.4;
+    }
+    .input-hint code {
+      background:var(--bg-elevated); padding:0.1rem 0.3rem; border-radius:2px;
+      font-size:0.6rem;
+    }
+
+    /* Buttons */
+    .btn-row { display:flex; gap:0.5rem; }
+    .btn {
+      padding:0.45rem 0.9rem; border:none; border-radius:4px;
+      font-family: var(--font-mono); font-size:0.7rem; font-weight:600; cursor:pointer;
+      transition: all 0.15s; outline:none; flex:1; text-align:center;
+    }
+    .btn:disabled { opacity:0.4; cursor:not-allowed; }
+    .btn-primary { background:var(--accent); color:#fff; }
+    .btn-primary:hover:not(:disabled) { background:#79b8ff; }
+    .btn-accent { background:var(--green); color:#000; }
+    .btn-accent:hover:not(:disabled) { background:#4cc762; }
+    .btn-ghost {
+      background:transparent; border:1px solid var(--border); color:var(--text-secondary);
+    }
+    .btn-ghost:hover:not(:disabled) { border-color:var(--accent); color:var(--accent); }
+    .btn-danger { background:transparent; border:1px solid var(--red); color:var(--red); flex:0.3; }
+    .btn-danger:hover:not(:disabled) { background:var(--red); color:#fff; }
+
+    /* ---- Console (main area) ---- */
+    .console-area {
+      flex:1; display:flex; flex-direction:column;
+      background: var(--bg-root);
+      overflow:hidden;
+    }
+    .console-header {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:0.5rem 1rem;
+      border-bottom:1px solid var(--border);
+      background:var(--bg-surface);
+      flex-shrink:0;
+    }
+    .console-tabs { display:flex; gap:0; }
+    .console-tab {
+      padding:0.35rem 0.75rem; font-size:0.7rem; color:var(--text-muted);
+      border-bottom:2px solid transparent; cursor:pointer; font-family:var(--font-mono);
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .console-tab.active { color:var(--accent); border-color:var(--accent); }
+    .console-actions { display:flex; gap:0.5rem; }
+    .console-actions button {
+      background:transparent; border:none; color:var(--text-muted); cursor:pointer;
+      font-size:0.8rem; padding:0.15rem 0.4rem; border-radius:3px;
+      transition: color 0.15s, background 0.15s;
+    }
+    .console-actions button:hover { color:var(--text-primary); background:var(--bg-elevated); }
+
+    .console-body {
+      flex:1; overflow-y:auto; padding:0.75rem 1rem;
+      font-family: var(--font-mono); font-size:0.72rem; line-height:1.55;
+    }
+    .console-body::-webkit-scrollbar { width:6px; }
+    .console-body::-webkit-scrollbar-track { background:transparent; }
+    .console-body::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+
+    /* Log entries */
+    .log-entry { margin-bottom:0.15rem; display:flex; gap:0.5rem; }
+    .log-time { color:var(--text-muted); flex-shrink:0; font-size:0.65rem; min-width:5rem; }
+    .log-text { word-break:break-all; }
+    .log-entry.info .log-text { color:var(--text-secondary); }
+    .log-entry.system { margin:0.35rem 0; padding:0.25rem 0.5rem; background:var(--bg-surface); border-left:2px solid var(--accent); border-radius:0 4px 4px 0; }
+    .log-entry.system .log-text { color:var(--accent); }
+    .log-entry.success .log-text { color:var(--green); }
+    .log-entry.warn .log-text { color:var(--amber); }
+    .log-entry.error .log-text { color:var(--red); }
+    .log-entry.tool { margin:0.35rem 0; padding:0.3rem 0.6rem; background:var(--bg-elevated); border-left:2px solid var(--purple); border-radius:0 4px 4px 0; }
+    .log-entry.tool .log-text { color:var(--purple); }
+    .log-entry.retry { margin:0.35rem 0; padding:0.3rem 0.6rem; background:var(--amber-dim); border-left:2px solid var(--amber); border-radius:0 4px 4px 0; }
+    .log-entry.retry .log-text { color:var(--amber); }
+
+    /* Empty state */
+    .empty-state {
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      height:100%; color:var(--text-muted); text-align:center; gap:0.75rem;
+    }
+    .empty-state .icon { font-size:2.5rem; opacity:0.3; }
+    .empty-state .title { font-size:0.85rem; color:var(--text-secondary); }
+    .empty-state .hint { font-size:0.65rem; max-width:300px; line-height:1.5; }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+      .main { flex-direction:column; }
+      .sidebar { width:100%; max-height:50vh; overflow-y:auto; flex-shrink:1; }
+    }
   </style>
 </head>
 <body>
-  <header>
-    <h1>RrratCoder Dashboard</h1>
-    <p>个人开发者 Coding Agent Harness — Agent = LLM + Harness</p>
-  </header>
-  <main>
-    <div class="card">
-      <h2>系统状态</h2>
-      <div class="grid">
-        <div class="stat">
-          <div class="value" id="status">—</div>
-          <div class="label">运行状态</div>
-        </div>
-        <div class="stat">
-          <div class="value" id="uptime">—</div>
-          <div class="label">运行时间 (秒)</div>
-        </div>
-        <div class="stat">
-          <div class="value" id="version">v1.0.0</div>
-          <div class="label">版本</div>
+  <div class="app">
+    <!-- ===== HEADER ===== -->
+    <header class="header">
+      <div class="header-left">
+        <div class="logo">Rrrat<span>Coder</span></div>
+        <div class="agent-badge">
+          <span class="pulse" id="agent-pulse"></span>
+          <span id="agent-status">Agent Idle</span>
         </div>
       </div>
-    </div>
-    <div class="card">
-      <h2>Harness 模块</h2>
-      <div class="module-list" id="modules">
-        <span class="module-tag">加载中...</span>
+      <div class="header-right">
+        <span class="stat">v1.0.0</span>
+        <span class="stat">56 tests</span>
+        <span class="stat">DeepSeek</span>
       </div>
-    </div>
-    <div class="card">
-      <h2>Main Contribution</h2>
-      <p id="main-contribution" class="highlight module-tag" style="display:inline-block;padding:0.5rem 1rem;border-radius:4px;">加载中...</p>
-    </div>
-  </main>
-  <footer>RrratCoder · AI4SE Final Project · TypeScript + DeepSeek</footer>
-  <script>
-    fetch('/api/health')
-      .then(r => r.json())
-      .then(d => {
-        document.getElementById('status').textContent = d.status === 'ok' ? '✅ 正常' : '❌ 异常';
-        document.getElementById('uptime').textContent = Math.floor(d.uptime || 0);
-      })
-      .catch(() => document.getElementById('status').textContent = '❌ 离线');
+    </header>
 
-    fetch('/api/info')
-      .then(r => r.json())
-      .then(d => {
-        const modDiv = document.getElementById('modules');
-        modDiv.innerHTML = d.modules.map(m => `<span class="module-tag">${m}</span>`).join('');
-        document.getElementById('main-contribution').textContent = '★ ' + d.mainContribution;
-      })
-      .catch(() => {});
+    <!-- ===== MAIN ===== -->
+    <div class="main">
+      <!-- SIDEBAR -->
+      <aside class="sidebar">
+        <!-- Key Config -->
+        <div class="sidebar-section">
+          <div class="section-label">🔑 API Key</div>
+          <div class="key-status-row">
+            <span class="dot" id="key-dot"></span>
+            <span id="key-hint">检测中...</span>
+          </div>
+          <form id="key-form">
+            <div class="input-group">
+              <label>主密码</label>
+              <input type="password" id="key-password" placeholder="加密用密码" required autocomplete="off">
+            </div>
+            <div class="input-group">
+              <label>DeepSeek API Key</label>
+              <input type="password" id="key-apikey" placeholder="sk-..." required autocomplete="off">
+            </div>
+            <div class="btn-row">
+              <button type="submit" class="btn btn-primary">🔒 安全存储</button>
+              <button type="button" class="btn btn-danger" onclick="clearKey()">清除</button>
+            </div>
+          </form>
+          <p class="input-hint">AES-256-GCM 加密 · <code>~/.rrratcoder/credentials.enc</code></p>
+        </div>
+
+        <!-- Task Input -->
+        <div class="sidebar-section">
+          <div class="section-label">💻 任务指令</div>
+          <form id="task-form">
+            <div class="input-group">
+              <label>描述你的编码任务</label>
+              <textarea id="task-input" placeholder="例：在 src/ 下创建 hello.ts，输出 Hello World&#10;例：修复 src/utils.ts 中的类型错误&#10;例：给 agent-loop 添加超时控制" required></textarea>
+            </div>
+            <div class="input-group">
+              <label>主密码（解密 Key）</label>
+              <input type="password" id="task-password" placeholder="输入主密码" required autocomplete="off">
+            </div>
+            <button type="submit" class="btn btn-accent" id="run-btn" disabled>▶ 执行任务</button>
+          </form>
+        </div>
+
+        <!-- Quick modules -->
+        <div class="sidebar-section" style="padding-bottom:0.75rem;">
+          <div class="section-label">🧩 Harness 模块</div>
+          <div id="modules-tags" style="display:flex;flex-wrap:wrap;gap:0.35rem;">
+            <span style="font-size:0.65rem;color:var(--text-muted);">加载中...</span>
+          </div>
+          <p style="font-size:0.65rem;color:var(--amber);margin-top:0.6rem;" id="mc-tag"></p>
+        </div>
+      </aside>
+
+      <!-- CONSOLE -->
+      <section class="console-area">
+        <div class="console-header">
+          <div class="console-tabs">
+            <span class="console-tab active">▸ OUTPUT</span>
+            <span class="console-tab" id="tab-log" style="color:var(--text-muted);">▸ SESSION LOG</span>
+          </div>
+          <div class="console-actions">
+            <button onclick="clearConsole()" title="清空">🗑</button>
+          </div>
+        </div>
+        <div class="console-body" id="console">
+          <div class="empty-state">
+            <div class="icon">▸_</div>
+            <div class="title">Agent 就绪，等待任务指令</div>
+            <div class="hint">
+              在左侧输入编码任务并配置 API Key 后点击「执行任务」。<br>
+              Agent 将自动读写文件、执行命令、运行校验并自我修正。
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const $  = (id) => document.getElementById(id);
+    const $$ = (sel) => document.querySelector(sel);
+
+    let keyConfigured = false;
+    let emptyShown = true;
+
+    // ===== TIMESTAMP =====
+    function ts() {
+      return new Date().toLocaleTimeString('zh-CN', { hour12: false });
+    }
+
+    // ===== LOGGING =====
+    function log(cls, msg, extra) {
+      const c = $('console');
+      if (emptyShown) { c.innerHTML = ''; emptyShown = false; }
+      const div = document.createElement('div');
+      div.className = 'log-entry ' + cls;
+      div.innerHTML = `<span class="log-time">[${ts()}]</span><span class="log-text">${msg}</span>`;
+      if (extra) {
+        const ex = document.createElement('div');
+        ex.className = 'log-text';
+        ex.style.cssText = 'font-size:0.65rem;color:var(--text-muted);padding-left:5.5rem;';
+        ex.textContent = extra;
+        div.appendChild(ex);
+      }
+      c.appendChild(div);
+      c.scrollTop = c.scrollHeight;
+    }
+
+    function clearConsole() {
+      $('console').innerHTML = `<div class="empty-state">
+        <div class="icon">▸_</div>
+        <div class="title">控制台已清空</div>
+      </div>`;
+      emptyShown = true;
+    }
+
+    function setAgentStatus(running) {
+      const dot = $('agent-pulse');
+      const txt = $('agent-status');
+      if (running) {
+        dot.className = 'pulse';
+        txt.textContent = 'Agent Running';
+        txt.style.color = 'var(--green)';
+      } else {
+        dot.className = 'pulse off';
+        txt.textContent = 'Agent Idle';
+        txt.style.color = '';
+      }
+    }
+
+    // ===== API =====
+    async function refreshKeyStatus() {
+      try {
+        const r = await fetch('/api/key/status');
+        const d = await r.json();
+        keyConfigured = d.configured;
+        const dot = $('key-dot');
+        dot.className = d.configured ? 'dot dot-set' : 'dot dot-unset';
+        $('key-hint').textContent = d.hint;
+        $('run-btn').disabled = !d.configured;
+        $('agent-pulse').className = d.configured ? 'pulse' : 'pulse off';
+      } catch(e) {
+        $('key-hint').textContent = '⚠ 无法连接服务器';
+      }
+    }
+
+    async function loadInfo() {
+      try {
+        const r = await fetch('/api/info');
+        const d = await r.json();
+        $('modules-tags').innerHTML = d.modules.map(m =>
+          `<span style="font-size:0.65rem;background:var(--bg-elevated);color:var(--accent);padding:0.15rem 0.5rem;border-radius:3px;border:1px solid var(--border);">${m}</span>`
+        ).join('');
+        $('mc-tag').textContent = '★ ' + d.mainContribution;
+      } catch(e) {}
+    }
+
+    // ===== KEY FORM =====
+    $('key-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const password = $('key-password').value;
+      const apiKey = $('key-apikey').value.trim();
+      log('system', '🔐 正在安全存储 API Key...');
+      try {
+        const r = await fetch('/api/key/set', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password, apiKey }),
+        });
+        const d = await r.json();
+        if (d.ok) {
+          log('success', '✅ ' + d.message);
+          $('key-password').value = '';
+          $('key-apikey').value = '';
+          refreshKeyStatus();
+        } else {
+          log('error', '❌ ' + d.error);
+        }
+      } catch(err) {
+        log('error', '❌ 网络错误: ' + err.message);
+      }
+    });
+
+    async function clearKey() {
+      if (!confirm('确认清除已存储的 API Key？')) return;
+      try {
+        const r = await fetch('/api/key/clear', { method: 'POST' });
+        const d = await r.json();
+        log(d.ok ? 'success' : 'error', d.ok ? '✅ ' + d.message : '❌ ' + d.error);
+        refreshKeyStatus();
+      } catch(err) {
+        log('error', '❌ ' + err.message);
+      }
+    }
+
+    // ===== TASK FORM =====
+    $('task-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const task = $('task-input').value.trim();
+      const password = $('task-password').value;
+      if (!task || !password) return;
+
+      const btn = $('run-btn');
+      btn.disabled = true;
+      btn.textContent = '⟳ 执行中...';
+      setAgentStatus(true);
+
+      log('system', '🚀 任务开始');
+      log('info', '📋 ' + task);
+
+      try {
+        const r = await fetch('/api/run', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ task, password }),
+        });
+        const d = await r.json();
+        if (d.ok) {
+          const { status, rounds, summary, sessionLog } = d.result;
+          log('system', '── 执行结果 ──');
+          log(status === 'success' ? 'success' : 'warn',
+            `📊 状态: ${status}  |  轮次: ${rounds}`);
+          log('info', '📝 ' + (summary || '(无输出)'));
+
+          if (sessionLog && sessionLog.length) {
+            log('system', '── 会话详情 ──');
+            sessionLog.forEach((rec, i) => {
+              if (rec.toolCall) {
+                const args = rec.toolCall.function.arguments || '';
+                const shortArgs = args.length > 60 ? args.slice(0,60)+'...' : args;
+                log('tool', `🔧 [R${rec.round}] ${rec.toolCall.function.name}`,
+                  shortArgs);
+              }
+              if (rec.guardResult && !rec.guardResult.allowed) {
+                log('warn', `🛡️ [R${rec.round}] 护栏拦截: ${rec.guardResult.reason} (风险: ${rec.guardResult.risk})`);
+              }
+              if (rec.feedbackResult && !rec.feedbackResult.passed) {
+                const fails = rec.feedbackResult.results
+                  ?.filter(r=>!r.passed).map(r=>r.name).join(', ') || '';
+                log('retry', `🔄 [R${rec.round}] 校验失败 → 自动重试`,
+                  fails ? `失败项: ${fails}` : '');
+              }
+              if (rec.toolResult && !rec.toolResult.success) {
+                log('error', `❌ [R${rec.round}] 工具失败: ${rec.toolResult.error || ''}`);
+              }
+            });
+          }
+          log('system', '── ' + (status === 'success' ? '✅' : '⚠️') + ' 任务结束 ──');
+        } else {
+          log('error', '❌ ' + d.error);
+        }
+      } catch(err) {
+        log('error', '❌ 网络错误: ' + err.message);
+      }
+
+      btn.disabled = false;
+      btn.textContent = '▶ 执行任务';
+      setAgentStatus(false);
+      $('task-password').value = '';
+    });
+
+    // ===== INIT =====
+    refreshKeyStatus();
+    loadInfo();
   </script>
 </body>
 </html>

@@ -1,6 +1,14 @@
 import express from 'express';
 import { join } from 'path';
 import { fileURLToPath } from 'url';
+import { existsSync } from 'fs';
+import { homedir } from 'os';
+import { CredentialManager } from '../credentials/credential-manager';
+import { loadConfig } from '../config/config-loader';
+import { DeepSeekAdapter } from '../core/deepseek-adapter';
+import { ToolDispatcher } from '../tools/dispatcher';
+import { AgentLoop } from '../core/agent-loop';
+import type { ToolContext } from '../types/index';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = join(__filename, '..');
@@ -11,17 +19,96 @@ const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3000;
 app.use(express.json());
 app.use(express.static(join(__dirname, 'public')));
 
+// ===== Key Management =====
+const CRED_PATH = join(homedir(), '.rrratcoder', 'credentials.enc');
+
+app.get('/api/key/status', (_req, res) => {
+  const configured = existsSync(CRED_PATH);
+  res.json({
+    configured,
+    status: configured ? '🟢 已配置' : '⚪ 未配置',
+    hint: configured ? 'API Key 已安全存储，可直接执行任务' : '请先设置 DeepSeek API Key',
+    path: CRED_PATH,
+  });
+});
+
+app.post('/api/key/set', (req, res) => {
+  const { password, apiKey } = req.body;
+  if (!password || !apiKey) {
+    res.status(400).json({ error: '请提供 password（主密码）和 apiKey（DeepSeek API Key）' });
+    return;
+  }
+  if (!apiKey.startsWith('sk-')) {
+    res.status(400).json({ error: 'API Key 格式不正确，DeepSeek Key 应以 sk- 开头' });
+    return;
+  }
+  try {
+    const cm = new CredentialManager(CRED_PATH);
+    cm.init(password);
+    cm.store(apiKey);
+    res.json({ ok: true, message: 'API Key 已安全存储 (AES-256-GCM 加密)' });
+  } catch (err: any) {
+    res.status(500).json({ error: `存储失败: ${err.message}` });
+  }
+});
+
+app.post('/api/key/clear', (_req, res) => {
+  try {
+    const cm = new CredentialManager(CRED_PATH);
+    cm.clear();
+    res.json({ ok: true, message: '凭据已清除' });
+  } catch (err: any) {
+    res.status(500).json({ error: `清除失败: ${err.message}` });
+  }
+});
+
+// ===== Task Execution =====
+app.post('/api/run', async (req, res) => {
+  const { task, password } = req.body;
+  if (!task || !password) {
+    res.status(400).json({ error: '请提供 task（任务描述）和 password（主密码）' });
+    return;
+  }
+
+  try {
+    const cm = new CredentialManager(CRED_PATH);
+    cm.init(password);
+    const apiKey = cm.retrieve();
+
+    const config = loadConfig('.harness/config.json');
+    const ctx: ToolContext = {
+      workspaceRoot: config.agent.workspaceRoot,
+      allowedPaths: config.agent.allowedPaths,
+    };
+
+    const llm = new DeepSeekAdapter(apiKey);
+    const tools = new ToolDispatcher(ctx);
+    const loop = new AgentLoop(llm, tools, config);
+
+    const result = await loop.run(task);
+    res.json({ ok: true, result });
+  } catch (err: any) {
+    res.status(500).json({ error: `执行失败: ${err.message}` });
+  }
+});
+
+// ===== Info =====
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString(), uptime: process.uptime() });
 });
 
 app.get('/api/info', (_req, res) => {
+  const configured = existsSync(CRED_PATH);
   res.json({
     name: 'RrratCoder',
     version: '1.0.0',
-    description: '个人开发者 Coding Agent Harness',
+    description: '个人开发者 Coding Agent Harness — Agent = LLM + Harness',
     modules: ['agent-loop', 'tools', 'feedback', 'guardrail', 'memory', 'config', 'credentials'],
     mainContribution: '反馈闭环 (Feedback Loop)',
+    repo: 'https://github.com/IseRrat/RrratCoder',
+    ci: 'https://github.com/IseRrat/RrratCoder/actions',
+    tests: '56 tests · 13 files · 100% pass',
+    keyConfigured: configured,
   });
 });
 
