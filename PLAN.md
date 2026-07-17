@@ -2442,3 +2442,33 @@ describe('机制演示（Mock LLM 驱动，确定性）', () => {
 ---
 
 **计划已完成，保存到 `PLAN.md`。请审阅后告知是否开始执行，或需要调整。**
+
+---
+
+## 执行记录
+
+> 所有 Task 已完成。每个 task 标注完成 commit hash 和验证结果。
+
+| Task | 描述 | 状态 | Commit | 测试数 | 备注 |
+|------|------|------|--------|--------|------|
+| 1 | 项目初始化 + 类型定义 | ✅ | `1afe30d` | — | tsc --noEmit 零错误 |
+| 2 | ConfigLoader 配置加载器 | ✅ | `cbd07e7` | 4 | TDD 红→绿→重构 |
+| 3 | MockLLMAdapter | ✅ | `5fca25a` | 3 | 响应序列耗尽 throw 明确错误 |
+| 4 | MemoryStore 记忆系统 | ✅ | `5fca25a` | 6 | set/get/query/persist/buildContextPrompt |
+| 5 | CredentialManager 凭据管理 | ✅ | `5fca25a` | 5 | AES-256-GCM 加密 |
+| 6 | ToolDispatcher + 4工具 | ✅ | `07e2816` | 5 | read_file/write_file/shell/grep |
+| 7 | Guardrail 治理护栏 | ✅ | `9dd1a65` | 8 | 11种危险模式 + 白名单 + 越界检测 |
+| 8 | ErrorClassifier 失败分类器 | ✅ | `e60648f` | 5 | Lint/TypeCheck/Test 三类正则解析 |
+| 9 | Validators + ValidatorChain + RetryState | ✅ | `e60648f` | 5 | 链式执行 + formatFeedback ≤2000 |
+| 10 | DeepSeekAdapter | ✅ | `b226fea` | — | OpenAI SDK → DeepSeek baseURL |
+| 11 | AgentLoop 主循环 | ✅ | `b226fea` | 4 | 4类停机条件 + 护栏嵌入 + 反馈注入 |
+| 12 | CLI 入口 | ✅ | `b226fea` | — | Commander.js run/key set/status/clear |
+| 13 | WebUI | ✅ | `b226fea` | — | Express + 原生 HTML 仪表盘 |
+| 14 | Dockerfile | ✅ | `b226fea` | — | node:22-alpine |
+| 15 | CI/CD (GitHub Actions) | ✅ | `b226fea` | — | unit-test job on push/pr |
+| 16 | 机制演示 (3 demos) | ✅ | `b226fea` | 11 | 护栏/反馈/RetryState 确定性演示 |
+| — | CI EACCES 修复 | ✅ | `def65c6` | — | os.tmpdir() 跨平台兼容 |
+
+**总计**：10 commits, 16 tasks, 56 tests, 13 test files, 全部通过。
+
+**最后 CI 状态**：[![Unit Tests](https://github.com/IseRrat/RrratCoder/actions/workflows/unit-test.yml/badge.svg)](https://github.com/IseRrat/RrratCoder/actions/workflows/unit-test.yml)

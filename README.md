@@ -186,22 +186,40 @@ rrratcoder/
 
 ## 部署与 CI/CD
 
-### 线上部署
+### 线上部署 (Vercel)
 
-WebUI 可部署到 [Render](https://render.com) 或 [Railway](https://railway.app)（学生免费额度）：
+WebUI 已部署到 Vercel（免费额度）：
 
-```bash
-# 启动 WebUI
-npm run web
-# 访问 http://localhost:3000
+🔗 **线上地址：[https://rrratcoder.vercel.app](https://rrratcoder.vercel.app)**
+
+> 即开即用，无冷启动延迟
+
+部署配置：[`vercel.json`](./vercel.json)
+
+```json
+// Vercel Serverless：所有请求路由到 api/index.js Express 应用
+// 零构建步骤，Express 内联 HTML Dashboard
 ```
 
-### CI/CD
+API 端点：
+- 健康检查：[`/api/health`](https://rrratcoder.vercel.app/api/health)
+- 项目信息：[`/api/info`](https://rrratcoder.vercel.app/api/info)
 
-GitHub Actions 自动运行测试（每次 push）：
+### Docker 部署
 
-- **Job**: `unit-test` — 运行全部单元测试（Mock LLM，零网络依赖，< 10s 完成）
-- **状态**: [![Unit Tests](https://github.com/IseRrat/RrratCoder/actions/workflows/unit-test.yml/badge.svg)](https://github.com/IseRrat/RrratCoder/actions/workflows/unit-test.yml)
+```bash
+# 构建镜像
+docker build -t rrratcoder .
+
+# WebUI 模式（默认）
+docker run -p 3000:3000 rrratcoder
+
+# CLI 模式
+docker run -it --rm \
+  -v $(pwd):/workspace \
+  -v ~/.rrratcoder:/root/.rrratcoder \
+  rrratcoder run "你的编码任务"
+```
 
 ---
 
