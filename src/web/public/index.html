@@ -3,557 +3,503 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RrratCoder · Agent Command Center</title>
+  <title>RrratCoder - AI Coding Agent</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #fafbfc;
-      --bg-surface: #ffffff;
-      --bg-raised: #f5f6f8;
-      --bg-input: #f8f9fa;
-      --border: #e1e4e8;
-      --border-focus: #0969da;
-      --text: #1f2328;
-      --text-secondary: #656d76;
-      --text-muted: #8c959f;
-      --accent: #0969da;
-      --accent-light: #ddf4ff;
-      --accent-border: #54aeff;
-      --green: #1a7f37;
-      --green-bg: #dafbe1;
-      --amber: #9a6700;
-      --amber-bg: #fff8c5;
-      --red: #cf222e;
-      --red-bg: #ffebe9;
-      --purple: #8250df;
-      --purple-bg: #fbefff;
-      --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-      --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      --font-code: 'IBM Plex Mono', 'Cascadia Code', 'Fira Code', Consolas, monospace;
-      --font-size-sm: 13px;
-      --font-size-base: 14px;
-      --font-size-lg: 16px;
-      --font-size-xl: 20px;
-      --font-size-2xl: 24px;
-      --radius: 8px;
+      --bg:          #ffffff;
+      --bg-soft:     #f8f9fb;
+      --bg-code:     #f4f5f7;
+      --border:      #e4e7ec;
+      --border-focus:#2563eb;
+      --text:        #111827;
+      --text-soft:   #6b7280;
+      --text-faint:  #9ca3af;
+      --blue:        #2563eb;
+      --blue-bg:     #eff6ff;
+      --green:       #16a34a;
+      --green-bg:    #f0fdf4;
+      --amber:       #d97706;
+      --amber-bg:    #fffbeb;
+      --red:         #dc2626;
+      --red-bg:      #fef2f2;
+      --purple:      #7c3aed;
+      --purple-bg:   #f5f3ff;
+      --font-ui:     'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-code:   'IBM Plex Mono', 'Cascadia Code', 'Fira Code', Consolas, monospace;
+      --radius:      10px;
+      --radius-sm:   6px;
+      --shadow-sm:   0 1px 2px rgba(0,0,0,.04);
+      --shadow:      0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.03);
     }
-
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
+    * { margin:0; padding:0; box-sizing:border-box; }
     body {
       font-family: var(--font-ui);
-      font-size: var(--font-size-base);
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      -webkit-font-smoothing: antialiased;
+      font-size:15px; color:var(--text); background:var(--bg);
+      -webkit-font-smoothing:antialiased;
     }
 
-    /* ========== LAYOUT ========== */
-    .app {
-      display: flex; flex-direction: column;
-      max-width: 1440px; margin: 0 auto; min-height: 100vh;
+    /* ====== TOP BAR ====== */
+    .topbar {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:10px 24px; border-bottom:1px solid var(--border);
+      background:var(--bg); gap:16px; flex-wrap:wrap;
     }
+    .topbar-left { display:flex; align-items:center; gap:14px; }
+    .brand {
+      font-family:var(--font-code); font-size:18px; font-weight:600;
+      color:var(--text); letter-spacing:-0.02em; text-decoration:none;
+    }
+    .brand span { color:var(--blue); }
+    .key-badge {
+      display:flex; align-items:center; gap:6px;
+      font-size:13px; padding:4px 10px; border-radius:20px;
+      border:1px solid var(--border); cursor:pointer; background:var(--bg-soft);
+      transition:border-color .15s;
+    }
+    .key-badge:hover { border-color:var(--text-faint); }
+    .key-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+    .key-dot.on { background:var(--green); }
+    .key-dot.off { background:var(--text-faint); }
+    .topbar-right { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--text-faint); }
+    .topbar-right span { padding:2px 8px; border:1px solid var(--border); border-radius:4px; font-family:var(--font-code); font-size:12px; }
 
-    /* ---- Header ---- */
-    .header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 16px 24px;
-      background: var(--bg-surface);
-      border-bottom: 1px solid var(--border);
-      flex-shrink: 0;
-      gap: 16px;
+    /* ====== KEY SETUP PANEL ====== */
+    .key-panel {
+      display:none; padding:14px 24px; border-bottom:1px solid var(--border);
+      background:var(--blue-bg); gap:12px; align-items:flex-end; flex-wrap:wrap;
     }
-    .header-left { display: flex; align-items: center; gap: 14px; }
-    .logo {
-      font-family: var(--font-code); font-size: var(--font-size-xl); font-weight: 600;
-      color: var(--text); letter-spacing: -0.02em;
+    .key-panel.show { display:flex; }
+    .field-inline { display:flex; flex-direction:column; gap:4px; }
+    .field-inline label { font-size:12px; font-weight:600; color:var(--text-soft); text-transform:uppercase; letter-spacing:.04em; }
+    .field-inline input {
+      padding:8px 12px; border:1.5px solid var(--border); border-radius:var(--radius-sm);
+      background:var(--bg); color:var(--text); font-family:var(--font-code); font-size:14px;
+      outline:none; width:220px; transition:border-color .15s;
     }
-    .logo-accent { color: var(--accent); }
-    .agent-indicator {
-      display: flex; align-items: center; gap: 8px;
-      font-size: var(--font-size-sm); font-weight: 500; color: var(--text-secondary);
-      background: var(--bg-raised); padding: 4px 12px; border-radius: 20px;
-      border: 1px solid var(--border);
-    }
-    .indicator-dot {
-      width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
-      background: var(--green); transition: background 0.3s;
-    }
-    .indicator-dot.off { background: var(--border); }
-    .header-stats {
-      display: flex; align-items: center; gap: 4px;
-      font-size: var(--font-size-sm); color: var(--text-muted);
-    }
-    .header-stats span {
-      padding: 3px 10px; background: var(--bg-raised); border-radius: 4px;
-      border: 1px solid var(--border); font-family: var(--font-code);
-    }
-
-    /* ---- Main ---- */
-    .main { display: flex; flex: 1; overflow: hidden; }
-
-    /* ---- Sidebar ---- */
-    .sidebar {
-      width: 420px; flex-shrink: 0;
-      display: flex; flex-direction: column;
-      background: var(--bg-surface);
-      border-right: 1px solid var(--border);
-      overflow-y: auto;
-    }
-    .sidebar-block {
-      padding: 20px 24px;
-      border-bottom: 1px solid var(--border);
-    }
-    .sidebar-block:last-child { border-bottom: none; flex: 1; }
-    .block-title {
-      font-size: var(--font-size-sm); font-weight: 600; color: var(--text-secondary);
-      text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 14px;
-    }
-
-    /* Key status row */
-    .key-status-row {
-      display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
-      font-size: var(--font-size-base); font-weight: 500;
-    }
-    .key-status-row .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-    .dot-active { background: var(--green); }
-    .dot-inactive { background: var(--border); border: 1.5px solid var(--text-muted); }
-
-    /* Forms */
-    .field { margin-bottom: 12px; }
-    .field:last-child { margin-bottom: 0; }
-    .field-label {
-      display: block; font-size: var(--font-size-sm); font-weight: 500;
-      color: var(--text); margin-bottom: 5px;
-    }
-    input, textarea {
-      width: 100%; padding: 10px 12px;
-      background: var(--bg-input); border: 1.5px solid var(--border);
-      color: var(--text); font-family: var(--font-code); font-size: var(--font-size-base);
-      border-radius: var(--radius); outline: none;
-      transition: border-color 0.15s, box-shadow 0.15s;
-    }
-    input:focus, textarea:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(9,105,218,0.12);
-    }
-    input::placeholder, textarea::placeholder { color: var(--text-muted); }
-    textarea { resize: none; min-height: 72px; line-height: 1.5; }
-    .field-hint {
-      font-size: var(--font-size-sm); color: var(--text-muted); margin-top: 6px;
-      line-height: 1.5;
-    }
-    .field-hint code {
-      background: var(--bg-raised); padding: 1px 6px; border-radius: 4px;
-      font-family: var(--font-code); font-size: 12px; border: 1px solid var(--border);
-    }
-
-    /* Buttons */
-    .btn-group { display: flex; gap: 8px; }
+    .field-inline input:focus { border-color:var(--blue); }
+    .field-inline input::placeholder { color:var(--text-faint); }
     .btn {
-      padding: 10px 18px; border: 1.5px solid transparent; border-radius: var(--radius);
-      font-family: var(--font-ui); font-size: var(--font-size-base); font-weight: 600;
-      cursor: pointer; transition: all 0.15s; outline: none; text-align: center;
-      line-height: 1.2;
+      padding:8px 18px; border-radius:var(--radius-sm); font-size:14px; font-weight:600;
+      font-family:var(--font-ui); cursor:pointer; border:none; transition:all .15s;
+      white-space:nowrap;
     }
-    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
-    .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
-    .btn-primary:hover:not(:disabled) { background: #0860ca; }
-    .btn-success { background: var(--green); color: #fff; border-color: var(--green); flex: 1; }
-    .btn-success:hover:not(:disabled) { background: #157030; }
-    .btn-outline {
-      background: var(--bg-surface); border-color: var(--border); color: var(--text-secondary);
-    }
-    .btn-outline:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
-    .btn-danger {
-      background: var(--bg-surface); border-color: var(--red); color: var(--red);
-      padding-left: 14px; padding-right: 14px;
-    }
-    .btn-danger:hover:not(:disabled) { background: var(--red-bg); }
+    .btn:disabled { opacity:.45; cursor:not-allowed; }
+    .btn-blue { background:var(--blue); color:#fff; }
+    .btn-blue:hover:not(:disabled) { background:#1d4ed8; }
+    .btn-ghost { background:transparent; border:1.5px solid var(--border); color:var(--text-soft); }
+    .btn-ghost:hover:not(:disabled) { border-color:var(--blue); color:var(--blue); }
 
-    /* Modules */
-    .module-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
-    .module-tag {
-      font-size: 12px; font-weight: 500; font-family: var(--font-code);
-      background: var(--accent-light); color: var(--accent);
-      padding: 3px 10px; border-radius: 5px; border: 1px solid var(--accent-border);
-    }
-    .main-contribution {
-      font-size: var(--font-size-base); font-weight: 600; color: var(--amber);
-      padding: 8px 14px; background: var(--amber-bg); border-radius: var(--radius);
-      border: 1px solid #dfb31730; display: inline-block;
-    }
+    /* ====== MAIN CONTENT ====== */
+    .main { max-width:900px; margin:0 auto; padding:28px 24px 60px; }
 
-    /* ---- Console ---- */
-    .console-area {
-      flex: 1; display: flex; flex-direction: column;
-      background: var(--bg); overflow: hidden;
+    /* Prompt hero */
+    .prompt-hero {
+      background:var(--bg); border:2px solid var(--border); border-radius:var(--radius);
+      padding:20px 24px 16px; transition:border-color .2s; margin-bottom:28px;
     }
-    .console-bar {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 10px 20px;
-      background: var(--bg-surface); border-bottom: 1px solid var(--border);
-      flex-shrink: 0;
+    .prompt-hero:focus-within { border-color:var(--blue); }
+    .prompt-hero textarea {
+      width:100%; min-height:80px; border:none; resize:vertical;
+      font-family:var(--font-ui); font-size:18px; color:var(--text);
+      line-height:1.6; outline:none; background:transparent;
     }
-    .console-tabs { display: flex; gap: 0; }
-    .console-tab {
-      padding: 6px 16px; font-size: var(--font-size-base); font-weight: 500;
-      color: var(--text-muted); border-bottom: 2px solid transparent; cursor: pointer;
-      font-family: var(--font-code); transition: color 0.15s, border-color 0.15s;
+    .prompt-hero textarea::placeholder { color:var(--text-faint); }
+    .prompt-footer {
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      margin-top:12px; padding-top:12px; border-top:1px solid var(--border);
+      flex-wrap:wrap;
     }
-    .console-tab.active { color: var(--accent); border-color: var(--accent); }
-    .console-action {
-      background: none; border: none; color: var(--text-muted); cursor: pointer;
-      font-size: 16px; padding: 4px 8px; border-radius: 4px; transition: background 0.15s;
+    .prompt-footer .pass-field { display:flex; align-items:center; gap:8px; }
+    .prompt-footer .pass-field input {
+      width:160px; padding:7px 10px; border:1.5px solid var(--border);
+      border-radius:var(--radius-sm); font-family:var(--font-code); font-size:13px;
+      background:var(--bg-soft); outline:none;
     }
-    .console-action:hover { background: var(--bg-raised); color: var(--text); }
+    .prompt-footer .pass-field input:focus { border-color:var(--blue); }
+    .btn-run {
+      padding:10px 28px; border-radius:var(--radius-sm); font-size:16px; font-weight:600;
+      font-family:var(--font-ui); cursor:pointer; border:none; background:var(--text);
+      color:#fff; transition:all .15s;
+    }
+    .btn-run:hover:not(:disabled) { background:#000; }
+    .btn-run:disabled { background:var(--text-faint); }
 
-    .console-body {
-      flex: 1; overflow-y: auto; padding: 16px 24px;
-      font-family: var(--font-code); font-size: var(--font-size-base); line-height: 1.7;
-    }
-    .console-body::-webkit-scrollbar { width: 8px; }
-    .console-body::-webkit-scrollbar-track { background: transparent; }
-    .console-body::-webkit-scrollbar-thumb {
-      background: var(--border); border-radius: 4px;
-    }
+    /* ====== RESULTS ====== */
+    .results { display:flex; flex-direction:column; gap:16px; }
 
-    /* Log entries */
-    .log-line { display: flex; gap: 12px; padding: 3px 0; }
-    .log-line:first-child { padding-top: 0; }
-    .log-time {
-      color: var(--text-muted); flex-shrink: 0; font-size: var(--font-size-sm);
-      min-width: 68px; user-select: none;
+    .msg {
+      display:flex; gap:14px; padding:20px; border-radius:var(--radius);
+      background:var(--bg-soft); border:1px solid var(--border);
     }
-    .log-content { word-break: break-word; flex: 1; }
+    .msg-avatar {
+      width:36px; height:36px; border-radius:50%; flex-shrink:0;
+      display:flex; align-items:center; justify-content:center;
+      font-family:var(--font-code); font-size:14px; font-weight:700;
+    }
+    .msg.agent .msg-avatar { background:var(--blue-bg); color:var(--blue); }
+    .msg.user  .msg-avatar { background:var(--bg); color:var(--text-soft); border:1.5px solid var(--border); }
+    .msg-body { flex:1; line-height:1.65; overflow:hidden; }
+    .msg-body p { margin-bottom:8px; }
+    .msg-body p:last-child { margin-bottom:0; }
 
-    .log-line.info .log-content { color: var(--text-secondary); }
-    .log-line.system {
-      margin: 6px 0; padding: 8px 12px;
-      background: var(--accent-light); border-left: 3px solid var(--accent);
-      border-radius: 0 6px 6px 0;
+    /* Code block */
+    .code-block {
+      margin:8px 0; border:1.5px solid var(--border); border-radius:var(--radius-sm);
+      overflow:hidden;
     }
-    .log-line.system .log-content { color: var(--accent); font-weight: 500; }
-    .log-line.success .log-content { color: var(--green); }
-    .log-line.warn .log-content { color: var(--amber); }
-    .log-line.error .log-content { color: var(--red); }
-    .log-line.tool {
-      margin: 6px 0; padding: 8px 12px;
-      background: var(--purple-bg); border-left: 3px solid var(--purple);
-      border-radius: 0 6px 6px 0;
+    .code-header {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:6px 14px; background:var(--bg-soft); border-bottom:1px solid var(--border);
+      font-size:12px; font-family:var(--font-code); color:var(--text-soft);
     }
-    .log-line.tool .log-content { color: var(--purple); }
-    .log-line.retry {
-      margin: 6px 0; padding: 8px 12px;
-      background: var(--amber-bg); border-left: 3px solid var(--amber);
-      border-radius: 0 6px 6px 0;
-    }
-    .log-line.retry .log-content { color: var(--amber); font-weight: 500; }
-    .log-line.guard {
-      margin: 6px 0; padding: 8px 12px;
-      background: var(--red-bg); border-left: 3px solid var(--red);
-      border-radius: 0 6px 6px 0;
+    .code-header .lang { color:var(--text-faint); }
+    .code-body {
+      padding:14px 16px; background:var(--bg-code); overflow-x:auto;
+      font-family:var(--font-code); font-size:14px; line-height:1.55; white-space:pre;
     }
 
-    /* Empty state */
-    .empty-page {
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      height: 100%; color: var(--text-muted); text-align: center; gap: 12px;
+    /* Validation block */
+    .val-block {
+      margin:8px 0; padding:12px 16px; border-radius:var(--radius-sm);
+      font-size:14px; display:flex; flex-wrap:wrap; gap:10px; align-items:center;
     }
-    .empty-page .cursor {
-      font-family: var(--font-code); font-size: var(--font-size-2xl); opacity: 0.25;
-      animation: blink 1s step-end infinite;
-    }
-    @keyframes blink { 50% { opacity: 0; } }
-    .empty-page .title {
-      font-size: var(--font-size-lg); font-weight: 600; color: var(--text-secondary);
-    }
-    .empty-page .desc {
-      font-size: var(--font-size-base); max-width: 380px; line-height: 1.6;
+    .val-block.pass { background:var(--green-bg); color:var(--green); border:1px solid #bbf7d0; }
+    .val-block.fail { background:var(--amber-bg); color:var(--amber); border:1px solid #fde68a; }
+    .val-item { font-family:var(--font-code); font-size:13px; }
+    .val-item .label { opacity:.7; }
+
+    /* Guard block */
+    .guard-block {
+      margin:8px 0; padding:10px 14px; border-radius:var(--radius-sm);
+      background:var(--red-bg); color:var(--red); font-size:14px;
+      border:1px solid #fecaca; font-weight:500;
     }
 
-    @media (max-width: 860px) {
-      .main { flex-direction: column; }
-      .sidebar { width: 100%; max-height: 52vh; flex-shrink: 1; }
-      .header { flex-wrap: wrap; gap: 10px; }
+    /* Tool row */
+    .tool-row {
+      display:flex; align-items:center; gap:10px;
+      font-size:13px; font-family:var(--font-code); color:var(--purple);
+      padding:6px 0;
+    }
+    .tool-row .name { font-weight:600; }
+
+    /* Summary bar */
+    .summary-bar {
+      display:flex; align-items:center; gap:16px; padding:14px 20px;
+      border-radius:var(--radius); font-size:14px; font-weight:600;
+      flex-wrap:wrap;
+    }
+    .summary-bar.success { background:var(--green-bg); color:var(--green); border:1px solid #bbf7d0; }
+    .summary-bar.fail    { background:var(--red-bg); color:var(--red); border:1px solid #fecaca; }
+    .summary-stat { font-family:var(--font-code); font-size:13px; }
+
+    /* Empty */
+    .empty-results {
+      text-align:center; padding:40px 20px; color:var(--text-faint);
+    }
+    .empty-results .title { font-size:16px; font-weight:600; margin-bottom:8px; }
+    .empty-results .desc { font-size:14px; line-height:1.6; max-width:400px; margin:0 auto; }
+
+    @media (max-width:640px) {
+      .main { padding:16px 12px 40px; }
+      .prompt-hero textarea { font-size:16px; min-height:60px; }
+      .msg { flex-direction:column; gap:8px; }
     }
   </style>
 </head>
 <body>
-  <div class="app">
-    <!-- HEADER -->
-    <header class="header">
-      <div class="header-left">
-        <div class="logo">Rrrat<span class="logo-accent">Coder</span></div>
-        <div class="agent-indicator">
-          <span class="indicator-dot off" id="agent-dot"></span>
-          <span id="agent-label">Agent Idle</span>
-        </div>
+
+  <!-- ====== TOP BAR ====== -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <a class="brand" href="/">Rrrat<span>Coder</span></a>
+      <div class="key-badge" id="key-badge" onclick="toggleKeyPanel()" title="API Key settings">
+        <span class="key-dot off" id="key-dot"></span>
+        <span id="key-label">No API Key</span>
       </div>
-      <div class="header-stats">
-        <span>v1.0.0</span>
-        <span>56 tests</span>
-        <span>DeepSeek</span>
-      </div>
-    </header>
-
-    <!-- MAIN -->
-    <div class="main">
-      <!-- SIDEBAR -->
-      <aside class="sidebar">
-        <!-- Key Config -->
-        <div class="sidebar-block">
-          <div class="block-title">API Key</div>
-          <div class="key-status-row">
-            <span class="dot dot-inactive" id="key-dot"></span>
-            <span id="key-hint">Detecting...</span>
-          </div>
-          <form id="key-form">
-            <div class="field">
-              <label class="field-label" for="key-password">Master Password</label>
-              <input type="password" id="key-password" placeholder="Encryption passphrase" required autocomplete="off">
-            </div>
-            <div class="field">
-              <label class="field-label" for="key-apikey">DeepSeek API Key</label>
-              <input type="password" id="key-apikey" placeholder="sk-..." required autocomplete="off">
-            </div>
-            <div class="btn-group">
-              <button type="submit" class="btn btn-primary" style="flex:1;">Store Securely</button>
-              <button type="button" class="btn btn-danger" onclick="clearKey()">Clear</button>
-            </div>
-          </form>
-          <p class="field-hint">AES-256-GCM encrypted storage at <code>~/.rrratcoder/credentials.enc</code></p>
-        </div>
-
-        <!-- Task Input -->
-        <div class="sidebar-block">
-          <div class="block-title">Task</div>
-          <form id="task-form">
-            <div class="field">
-              <label class="field-label" for="task-input">Describe your coding task</label>
-              <textarea id="task-input" placeholder="e.g. Create src/hello.ts that prints Hello World&#10;e.g. Fix type errors in src/utils.ts&#10;e.g. Add timeout control to agent-loop" required></textarea>
-            </div>
-            <div class="field">
-              <label class="field-label" for="task-password">Master Password</label>
-              <input type="password" id="task-password" placeholder="To decrypt your API key" required autocomplete="off">
-            </div>
-            <button type="submit" class="btn btn-success" id="run-btn" disabled>Run Task</button>
-          </form>
-        </div>
-
-        <!-- Modules -->
-        <div class="sidebar-block">
-          <div class="block-title">Harness Modules</div>
-          <div class="module-tags" id="modules-tags">
-            <span style="font-size:14px;color:var(--text-muted);">Loading...</span>
-          </div>
-          <p class="main-contribution" id="mc-tag" style="margin-top:12px;"></p>
-        </div>
-      </aside>
-
-      <!-- CONSOLE -->
-      <section class="console-area">
-        <div class="console-bar">
-          <div class="console-tabs">
-            <span class="console-tab active">Output</span>
-            <span class="console-tab" style="color:var(--text-muted);">Session Log</span>
-          </div>
-          <button class="console-action" onclick="clearConsole()" title="Clear console">Clear</button>
-        </div>
-        <div class="console-body" id="console">
-          <div class="empty-page">
-            <div class="cursor">|</div>
-            <div class="title">Agent ready — awaiting task</div>
-            <div class="desc">
-              Configure your DeepSeek API Key in the sidebar, then enter a coding task.
-              The agent will read/write files, execute commands, run validation, and auto-correct.
-            </div>
-          </div>
-        </div>
-      </section>
+    </div>
+    <div class="topbar-right">
+      <span>v1.0.0</span>
+      <span>56 tests</span>
+      <span>DeepSeek</span>
     </div>
   </div>
 
-  <script>
-    const $  = (id) => document.getElementById(id);
+  <!-- ====== KEY SETUP PANEL ====== -->
+  <div class="key-panel" id="key-panel">
+    <div class="field-inline">
+      <label>Master Password</label>
+      <input type="password" id="key-password" placeholder="Encryption passphrase" autocomplete="off">
+    </div>
+    <div class="field-inline">
+      <label>DeepSeek API Key</label>
+      <input type="password" id="key-apikey" placeholder="sk-..." autocomplete="off">
+    </div>
+    <button class="btn btn-blue" id="btn-store" onclick="storeKey()">Save Key</button>
+    <button class="btn btn-ghost" onclick="clearKey()">Clear</button>
+  </div>
 
-    let keyConfigured = false;
-    let emptyShown = true;
+  <!-- ====== MAIN ====== -->
+  <div class="main">
 
-    function ts() {
-      return new Date().toLocaleTimeString('en-US', { hour12: false });
+    <!-- Prompt Hero -->
+    <div class="prompt-hero">
+      <textarea id="prompt" placeholder="What do you want to build?
+
+Describe your coding task, e.g.:
+Create a TypeScript utility that validates email addresses
+Write a simple Express API with two endpoints
+Fix the type errors in src/utils.ts" rows="3"></textarea>
+      <div class="prompt-footer">
+        <div class="pass-field">
+          <input type="password" id="task-password" placeholder="Master password" autocomplete="off">
+        </div>
+        <button class="btn-run" id="btn-run" disabled onclick="runTask()">Generate</button>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div class="results" id="results">
+      <div class="empty-results">
+        <div class="title">Your generated code will appear here</div>
+        <div class="desc">
+          Configure your DeepSeek API Key above, type a prompt, and click Generate.
+          The agent will write files, run validation, and auto-correct errors.
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+<script>
+var keyOk = false;
+
+function $(id) { return document.getElementById(id); }
+
+// ===== KEY PANEL =====
+function toggleKeyPanel() {
+  $('key-panel').classList.toggle('show');
+}
+
+async function refreshKey() {
+  try {
+    var r = await fetch('/api/key/status');
+    var d = await r.json();
+    keyOk = d.configured;
+    $('key-dot').className = 'key-dot ' + (keyOk ? 'on' : 'off');
+    $('key-label').textContent = keyOk ? 'API Key Ready' : 'No API Key';
+    $('btn-run').disabled = !keyOk;
+  } catch(e) {
+    $('key-label').textContent = 'Server offline';
+  }
+}
+
+async function storeKey() {
+  var pw = $('key-password').value;
+  var key = $('key-apikey').value.trim();
+  if (!pw || !key) return;
+  $('btn-store').disabled = true;
+  $('btn-store').textContent = 'Saving...';
+  try {
+    var r = await fetch('/api/key/set', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({password:pw, apiKey:key})
+    });
+    var d = await r.json();
+    if (d.ok) {
+      $('key-password').value = '';
+      $('key-apikey').value = '';
+      $('key-panel').classList.remove('show');
+      refreshKey();
+    } else {
+      alert(d.error);
     }
+  } catch(e) { alert('Error: '+e.message); }
+  $('btn-store').disabled = false;
+  $('btn-store').textContent = 'Save Key';
+}
 
-    function log(cls, msg, detail) {
-      const c = $('console');
-      if (emptyShown) { c.innerHTML = ''; emptyShown = false; }
-      const div = document.createElement('div');
-      div.className = 'log-line ' + cls;
-      let html = '<span class="log-time">[' + ts() + ']</span><span class="log-content">' + msg + '</span>';
-      if (detail) {
-        html += '<div style="font-size:12px;color:var(--text-muted);padding-left:80px;margin-top:2px;">' + detail + '</div>';
-      }
-      div.innerHTML = html;
-      c.appendChild(div);
-      c.scrollTop = c.scrollHeight;
+async function clearKey() {
+  if (!confirm('Delete stored API key?')) return;
+  try {
+    var r = await fetch('/api/key/clear', { method:'POST' });
+    var d = await r.json();
+    refreshKey();
+  } catch(e) {}
+}
+
+// ===== RUN TASK =====
+async function runTask() {
+  var task = $('prompt').value.trim();
+  var pw = $('task-password').value;
+  if (!task || !pw) return;
+
+  var btn = $('btn-run');
+  btn.disabled = true;
+  btn.textContent = 'Generating...';
+
+  // Show loading
+  $('results').innerHTML =
+    '<div class="msg agent">' +
+      '<div class="msg-avatar">RC</div>' +
+      '<div class="msg-body"><p>Working on your request...</p></div>' +
+    '</div>';
+
+  try {
+    var r = await fetch('/api/run', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({task:task, password:pw})
+    });
+    var d = await r.json();
+    if (d.ok) {
+      renderResult(task, d.result);
+    } else {
+      $('results').innerHTML =
+        '<div class="msg agent"><div class="msg-avatar" style="background:var(--red-bg);color:var(--red);">!!</div>' +
+        '<div class="msg-body"><p style="color:var(--red);">Error: ' + escapeHtml(d.error) + '</p></div></div>';
     }
+  } catch(e) {
+    $('results').innerHTML =
+      '<div class="msg agent"><div class="msg-avatar" style="background:var(--red-bg);color:var(--red);">!!</div>' +
+      '<div class="msg-body"><p style="color:var(--red);">Network error: ' + e.message + '</p></div></div>';
+  }
 
-    function clearConsole() {
-      $('console').innerHTML = '<div class="empty-page">' +
-        '<div class="cursor">|</div>' +
-        '<div class="title">Console cleared</div>' +
+  btn.disabled = !keyOk;
+  btn.textContent = 'Generate';
+  $('task-password').value = '';
+}
+
+// ===== RENDER =====
+function renderResult(task, result) {
+  var html = '';
+
+  // Echo user prompt
+  html += '<div class="msg user">' +
+    '<div class="msg-avatar">You</div>' +
+    '<div class="msg-body"><p>' + escapeHtml(task) + '</p></div>' +
+  '</div>';
+
+  var log = result.sessionLog || [];
+
+  log.forEach(function(rec) {
+    // LLM text response
+    if (rec.llmResponse && rec.llmResponse.message && rec.llmResponse.message.content) {
+      var text = rec.llmResponse.message.content.trim();
+      if (text) {
+        html += '<div class="msg agent">' +
+          '<div class="msg-avatar">RC</div>' +
+          '<div class="msg-body"><p>' + escapeHtml(text) + '</p></div>' +
         '</div>';
-      emptyShown = true;
-    }
-
-    function setAgentStatus(running) {
-      const dot = $('agent-dot');
-      const label = $('agent-label');
-      if (running) {
-        dot.className = 'indicator-dot';
-        label.textContent = 'Agent Running';
-        label.style.color = 'var(--green)';
-      } else {
-        dot.className = 'indicator-dot off';
-        label.textContent = 'Agent Idle';
-        label.style.color = '';
       }
     }
 
-    // ---- API ----
-    async function refreshKeyStatus() {
-      try {
-        const r = await fetch('/api/key/status');
-        const d = await r.json();
-        keyConfigured = d.configured;
-        $('key-dot').className = d.configured ? 'dot dot-active' : 'dot dot-inactive';
-        $('key-hint').textContent = d.hint;
-        $('key-hint').style.color = d.configured ? 'var(--green)' : '';
-        $('run-btn').disabled = !d.configured;
-      } catch(e) {
-        $('key-hint').textContent = 'Cannot connect to server';
+    // Tool call
+    if (rec.toolCall) {
+      var tc = rec.toolCall;
+      var name = tc.function.name;
+      var args = {};
+      try { args = JSON.parse(tc.function.arguments); } catch(e) {}
+
+      // write_file: show the code
+      if (name === 'write_file' && args.path && args.content) {
+        var lang = '';
+        var ext = (args.path || '').split('.').pop();
+        if (ext === 'ts') lang = 'TypeScript';
+        else if (ext === 'js') lang = 'JavaScript';
+        else if (ext === 'json') lang = 'JSON';
+        else if (ext === 'md') lang = 'Markdown';
+        else if (ext === 'html') lang = 'HTML';
+        else if (ext === 'css') lang = 'CSS';
+        html += '<div class="code-block">' +
+          '<div class="code-header">' +
+            '<span>' + escapeHtml(args.path) + '</span>' +
+            '<span class="lang">' + (lang || ext) + '</span>' +
+          '</div>' +
+          '<div class="code-body">' + escapeHtml(args.content) + '</div>' +
+        '</div>';
       }
-    }
-
-    async function loadInfo() {
-      try {
-        const r = await fetch('/api/info');
-        const d = await r.json();
-        $('modules-tags').innerHTML = d.modules.map(function(m) {
-          return '<span class="module-tag">' + m + '</span>';
-        }).join('');
-        $('mc-tag').textContent = 'Main Contribution: ' + d.mainContribution;
-      } catch(e) {}
-    }
-
-    // ---- Key Form ----
-    $('key-form').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      var password = $('key-password').value;
-      var apiKey  = $('key-apikey').value.trim();
-      log('system', 'Storing API key...');
-      try {
-        var r = await fetch('/api/key/set', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ password: password, apiKey: apiKey }),
-        });
-        var d = await r.json();
-        if (d.ok) {
-          log('success', d.message);
-          $('key-password').value = '';
-          $('key-apikey').value = '';
-          refreshKeyStatus();
-        } else {
-          log('error', d.error);
+      // shell: show command + output
+      else if (name === 'shell' && args.command) {
+        html += '<div class="code-block">' +
+          '<div class="code-header">' +
+            '<span>Shell</span><span class="lang">$</span>' +
+          '</div>' +
+          '<div class="code-body">$ ' + escapeHtml(args.command) + '</div>' +
+        '</div>';
+        if (rec.toolResult && rec.toolResult.output) {
+          html += '<div class="code-block" style="margin-top:4px;">' +
+            '<div class="code-header"><span>Output</span></div>' +
+            '<div class="code-body">' + escapeHtml(rec.toolResult.output) + '</div>' +
+          '</div>';
         }
-      } catch(err) {
-        log('error', 'Network error: ' + err.message);
       }
-    });
-
-    async function clearKey() {
-      if (!confirm('Delete stored API key?')) return;
-      try {
-        var r = await fetch('/api/key/clear', { method: 'POST' });
-        var d = await r.json();
-        log(d.ok ? 'success' : 'error', d.ok ? d.message : d.error);
-        refreshKeyStatus();
-      } catch(err) {
-        log('error', err.message);
-      }
-    }
-
-    // ---- Task Form ----
-    $('task-form').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      var task     = $('task-input').value.trim();
-      var password = $('task-password').value;
-      if (!task || !password) return;
-
-      var btn = $('run-btn');
-      btn.disabled = true;
-      btn.textContent = 'Running...';
-      setAgentStatus(true);
-
-      log('system', 'Task started');
-      log('info', task);
-
-      try {
-        var r = await fetch('/api/run', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ task: task, password: password }),
-        });
-        var d = await r.json();
-        if (d.ok) {
-          var result = d.result;
-          log('system', '--- Result ---');
-          log(result.status === 'success' ? 'success' : 'warn',
-              'Status: ' + result.status + '  |  Rounds: ' + result.rounds);
-          log('info', (result.summary || '(no output)'));
-
-          if (result.sessionLog && result.sessionLog.length) {
-            log('system', '--- Session Details ---');
-            result.sessionLog.forEach(function(rec) {
-              if (rec.toolCall) {
-                var args = rec.toolCall.function.arguments || '';
-                var short = args.length > 80 ? args.slice(0,80) + '...' : args;
-                log('tool', '[R' + rec.round + '] ' + rec.toolCall.function.name, short);
-              }
-              if (rec.guardResult && !rec.guardResult.allowed) {
-                log('guard', '[R' + rec.round + '] Blocked: ' + rec.guardResult.reason + ' (risk: ' + rec.guardResult.risk + ')');
-              }
-              if (rec.feedbackResult && !rec.feedbackResult.passed) {
-                var fails = rec.feedbackResult.results
-                  ? rec.feedbackResult.results.filter(function(r){return !r.passed;}).map(function(r){return r.name;}).join(', ')
-                  : '';
-                log('retry', '[R' + rec.round + '] Validation failed - retrying', fails || '');
-              }
-              if (rec.toolResult && !rec.toolResult.success) {
-                log('error', '[R' + rec.round + '] Tool error: ' + (rec.toolResult.error || ''));
-              }
-            });
+      // Other tools
+      else {
+        html += '<div class="tool-row">' +
+          '<span class="name">' + name + '</span>' +
+          (args.path ? ' ' + escapeHtml(args.path) : '') +
+        '</div>';
+        if (rec.toolResult && rec.toolResult.output && name !== 'write_file') {
+          var out = rec.toolResult.output;
+          if (out.length < 500) {
+            html += '<div class="code-block" style="margin-top:4px;">' +
+              '<div class="code-body">' + escapeHtml(out) + '</div>' +
+            '</div>';
           }
-          log('system', '--- Task ' + (result.status === 'success' ? 'complete' : 'ended') + ' ---');
-        } else {
-          log('error', d.error);
         }
-      } catch(err) {
-        log('error', 'Network error: ' + err.message);
       }
 
-      btn.disabled = false;
-      btn.textContent = 'Run Task';
-      setAgentStatus(false);
-      $('task-password').value = '';
-    });
+      // Tool error
+      if (rec.toolResult && !rec.toolResult.success && rec.toolResult.error) {
+        html += '<div class="guard-block">' +
+          'Tool error: ' + escapeHtml(rec.toolResult.error) +
+        '</div>';
+      }
+    }
 
-    // ---- Init ----
-    refreshKeyStatus();
-    loadInfo();
-  </script>
+    // Guardrail block
+    if (rec.guardResult && !rec.guardResult.allowed) {
+      html += '<div class="guard-block">' +
+        'Blocked: ' + escapeHtml(rec.guardResult.reason || '') +
+        ' (Risk: ' + (rec.guardResult.risk || '') + ')' +
+      '</div>';
+    }
+
+    // Validation
+    if (rec.feedbackResult) {
+      var fb = rec.feedbackResult;
+      html += '<div class="val-block ' + (fb.passed ? 'pass' : 'fail') + '">' +
+        '<span style="font-weight:600;">' + (fb.passed ? 'Validation passed' : 'Validation failed - retrying') + '</span>';
+      if (fb.errors && fb.errors.length) {
+        fb.errors.forEach(function(e) {
+          html += '<span class="val-item"><span class="label">' + e.category + '</span> ' +
+            escapeHtml(e.message) + '</span>';
+        });
+      }
+      html += '</div>';
+    }
+  });
+
+  // Summary
+  var cls = result.status === 'success' ? 'success' : 'fail';
+  html += '<div class="summary-bar ' + cls + '">' +
+    '<span>' + (result.status === 'success' ? 'Task completed' : 'Task ended') + '</span>' +
+    '<span class="summary-stat">Status: ' + result.status + '</span>' +
+    '<span class="summary-stat">Rounds: ' + result.rounds + '</span>' +
+    '<span class="summary-stat">' + (result.summary || '') + '</span>' +
+  '</div>';
+
+  $('results').innerHTML = html;
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ===== INIT =====
+refreshKey();
+</script>
 </body>
 </html>
