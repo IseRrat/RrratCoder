@@ -13,7 +13,7 @@ const DEFAULT_CONFIG: HarnessConfig = {
     maxRounds: 10,
     maxRetries: 3,
     workspaceRoot: './',
-    allowedPaths: ['src/', 'tests/'],
+    allowedPaths: [],
   },
   guardrails: {
     mode: 'prompt',

@@ -74,13 +74,21 @@ class ShellTool implements Tool {
   constructor(private ctx: ToolContext) {}
 
   async execute(args: Record<string, unknown>): Promise<ToolResult> {
-    const command = args.command as string;
+    const rawCommand = args.command as string;
+    const isWindows = process.platform === 'win32';
+
+    // Windows: wrap in cmd /c so common commands work
+    const command = isWindows
+      ? `cmd /c "${rawCommand.replace(/"/g, '\\"')}"`
+      : rawCommand;
+
     try {
       const stdout = execSync(command, {
         cwd: this.ctx.workspaceRoot,
         timeout: 30000,
         encoding: 'utf-8',
         maxBuffer: 1024 * 1024,
+        shell: isWindows ? 'cmd.exe' : '/bin/sh',
       });
       return { success: true, output: stdout.slice(0, 8000) };
     } catch (err: any) {

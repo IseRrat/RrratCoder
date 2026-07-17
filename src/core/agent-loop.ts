@@ -156,6 +156,11 @@ export class AgentLoop {
     return `你是一个 Coding Agent，可以读写文件、执行命令、搜索代码来完成编程任务。
 每次写操作后系统会自动运行校验（Lint、类型检查、测试），请你根据反馈结果进行修正。
 
+关键规则：
+- 工具失败时，分析错误原因并尝试替代方案。禁止放弃任务直接输出代码文本。
+- 文件路径必须在工作目录内（使用相对路径，如 hello.py 而非 /abs/path/hello.py）。
+- 如果命令执行失败，尝试系统可用的等效命令。
+
 工作目录: ${this.config.agent.workspaceRoot}
 最高重试次数: ${this.config.agent.maxRetries}
 ${memPrompt}`;
