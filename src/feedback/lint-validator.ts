@@ -7,12 +7,17 @@ export class LintValidator implements Validator {
   name = 'eslint';
 
   async validate(workspaceRoot: string): Promise<{ passed: boolean; issues: LintIssue[] }> {
-    const eslintConfig = join(workspaceRoot, '.eslintrc.json');
-    if (!existsSync(eslintConfig)) {
+    const hasConfig = existsSync(join(workspaceRoot, 'eslint.config.js'))
+      || existsSync(join(workspaceRoot, 'eslint.config.mjs'))
+      || existsSync(join(workspaceRoot, 'eslint.config.ts'))
+      || existsSync(join(workspaceRoot, '.eslintrc.json'))
+      || existsSync(join(workspaceRoot, '.eslintrc.js'));
+
+    if (!hasConfig) {
       return { passed: true, issues: [] };
     }
     try {
-      execSync('npx eslint src/ --format json', { cwd: workspaceRoot, timeout: 30000 });
+      execSync('npx eslint . --format json', { cwd: workspaceRoot, timeout: 30000 });
       return { passed: true, issues: [] };
     } catch (err: any) {
       try {
